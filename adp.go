@@ -15,6 +15,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * For more information please visit my website at:
+ * http://web.cs.dal.ca/~darndt
+ *
+ * Or the code's repository:
+ *
+ * http://code.google.com/p/adp
  *  
  */
 
