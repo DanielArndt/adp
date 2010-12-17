@@ -31,7 +31,6 @@ import (
 	"fmt"
 	"bufio"
 	"log"
-	"container/list"
 	"sort"
 	"rand"
 	"os"
@@ -115,10 +114,9 @@ type labelRule struct {
 }
 
 // Loads the file referred to by filepath and parses it into rules used
-// to label a data set
-func loadRules(filepath string) *list.List {
+// to label a data set. [fig 1]
+func loadRules(filepath string) map[int]map[int]string {
 	// list to return which contains the parsed rules
-	var list = list.New()
 	log.Println("Opening file \"" + filepath + "\"")
 	sleep(LOGSLP)
 	// Open the rule file
@@ -128,6 +126,7 @@ func loadRules(filepath string) *list.List {
 	// Create a buffered reader for the rule file
 	dataReader := bufio.NewReader(dataFile)
 	// Read in the contents
+	featToValMap := map[int]map[int]string{}
 	for line, err := dataReader.ReadString('\n'); // read line by line
 	err == nil;                                   // loop until end of file or error
 	line, err = dataReader.ReadString('\n') {
@@ -146,19 +145,26 @@ func loadRules(filepath string) *list.List {
 			for i := 0; i < len(feature); i++ {
 				log.Println("Making label rule:")
 				log.Println("if", feature[i], "==", field[1], "{")
-				log.Println("\tlabel =", field[2],"\n}")
+				log.Println("\tlabel =", field[2])
+				log.Println("}")
 				sleep(LOGSLP)
-				newRule := new(labelRule)
-				newRule.featureIndex, err = strconv.Atoi(feature[i])
+				// Read in some values
+				featureIndex, err := strconv.Atoi(feature[i])
 				errCheck(err)
-				newRule.value, err = strconv.Atoi(field[1])
+				value, err := strconv.Atoi(field[1])
 				errCheck(err)
-				newRule.label = field[2]
-				list.PushBack(newRule)
+				label := field[2]
+				errCheck(err)
+				_, exists := featToValMap[featureIndex]
+				if exists {
+					featToValMap[featureIndex][value] = label
+				} else {
+					featToValMap[featureIndex] = map[int]string{value:label}
+				}
 			}
 		}
 	}
-	return list
+	return featToValMap
 }
 
 func main() {
@@ -178,7 +184,7 @@ func main() {
 		fmt.Println("Invalid input")
 		fmt.Println()
 	}
-
+	
 	// ------------------------------
 }
 
@@ -191,9 +197,11 @@ func exit() {
 //state 1
 func interactiveLabelDataSet() {
 	// Load in the rules
-	rulesList := loadRules("label.rules")
-	log.Printf("First item in label list: %+v\n",
-		rulesList.Front().Value.(*labelRule))
+	featToValMap := loadRules("label.rules")
+	log.Printf("Value for 44->15 in featToValMap: %+v\n", featToValMap[44][15])
+	for k,v := range featToValMap {
+		log.Println("key:", k, "val:", v)
+	}
 	sleep(LOGSLP)
 	// Begin labeling the data set
 	fmt.Println("Label a data set")
@@ -233,30 +241,28 @@ func interactiveLabelDataSet() {
 		line = strings.TrimRight(line, "\n")
 		// Split the line into it's feature values
 		feature := strings.Split(line, ",", -1)
-		// TODO: fix the way we deal with malformed lines
+		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
 			break
 		}
-		// Iterate through each rule
-		for item := rulesList.Front(); item != nil; item = item.Next() {
-			// Grab some values
-			featInd := item.Value.(*labelRule).featureIndex
-			val := item.Value.(*labelRule).value
-			featVal, err := strconv.Atoi(feature[featInd])
+		FIND_RULE:
+		for ruleFeature,ruleValMap := range featToValMap {
+			instanceFeatVal, err := strconv.Atoi(feature[ruleFeature])
 			errCheck(err)
-			// Check if the rule is satisfied
-			if featVal == val {
-				label = item.Value.(*labelRule).label
-				break
-			} else {
-				label = "OTHER"
+			for featVal, valLabel := range ruleValMap {
+				if featVal == instanceFeatVal {
+					label = valLabel
+					break FIND_RULE
+				}
 			}
+			label = "OTHER"
 		}
+		_, err = labeledFile.WriteString(line + "," + label + NL)
 		//log.Print(feature[0], ",", feature[1], ",", feature[2], ",", feature[3])
 		//log.Println("-->", label)
 		sleep(LOGSLP)
 		// Print labeled line to labeled file
-		_, err = labeledFile.WriteString(line + "," + label + NL)
+
 		errCheck(err)
 	}
 }
