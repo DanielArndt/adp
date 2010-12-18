@@ -198,7 +198,7 @@ func exit() {
 func interactiveLabelDataSet() {
 	// Load in the rules
 	featToValMap := loadRules("label.rules")
-	log.Printf("Value for 44->15 in featToValMap: %+v\n", featToValMap[44][15])
+	// Read out the maps stored for each feature
 	for k,v := range featToValMap {
 		log.Println("key:", k, "val:", v)
 	}
@@ -245,6 +245,7 @@ func interactiveLabelDataSet() {
 		if len(feature) < 5 {
 			break
 		}
+		//Find the rule that satisfies the current individual, if any.
 		FIND_RULE:
 		for ruleFeature,ruleValMap := range featToValMap {
 			instanceFeatVal, err := strconv.Atoi(feature[ruleFeature])
@@ -255,7 +256,9 @@ func interactiveLabelDataSet() {
 					break FIND_RULE
 				}
 			}
-			label = "OTHER"
+			if (label == "") {
+				label = "OTHER"
+			}
 		}
 		_, err = labeledFile.WriteString(line + "," + label + NL)
 		//log.Print(feature[0], ",", feature[1], ",", feature[2], ",", feature[3])
