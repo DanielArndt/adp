@@ -41,14 +41,13 @@ import (
 
 // Create some constants
 const (
-	NL        = "\n"
 	TAB       = "\t"
-	COPYRIGHT = "Copyright (C) 2010 Daniel Arndt" + NL +
-		"This program comes with ABSOLUTELY NO WARRANTY;" + NL +
-		"This is free software, and you are welcome to redistribute it" + NL +
-		"under certain conditions; please see the COPYING file which" + NL +
-		"you should have received with this program. For more " + NL +
-		"information, please visit: " + NL +
+	COPYRIGHT = "Copyright (C) 2010 Daniel Arndt" + "\n" +
+		"This program comes with ABSOLUTELY NO WARRANTY;" + "\n" +
+		"This is free software, and you are welcome to redistribute it" + "\n" +
+		"under certain conditions; please see the COPYING file which" + "\n" +
+		"you should have received with this program. For more " + "\n" +
+		"information, please visit: " + "\n" +
 		"http://web.cs.dal.ca/~darndt"
 	LOGSLP = 1
 )
@@ -74,8 +73,8 @@ func sleep(i int64) {
 
 // Display a welcome message
 func displayWelcome() {
-	fmt.Println(NL + "Welcome to Arndt's Data Processor!")
-	fmt.Println(NL + COPYRIGHT + NL) 
+	fmt.Println("\n" + "Welcome to Arndt's Data Processor!")
+	fmt.Println("\n" + COPYRIGHT + "\n") 
 	fmt.Println("Choose an option")
 	displayOptions()
 }
@@ -107,13 +106,6 @@ var opt []option = []option {
 	{id: 1, desc: "Label a data set", do: interactiveLabelDataSet},
 	{id: 2, desc: "Build training and test set", do: interactiveBuildTrainAndTestSet},
 	{id: 3, desc: "Edit the feature set", do: interactiveFeatureEditor},
-}
-
-// Holds rules on how to label data
-type labelRule struct {
-	featureIndex int
-	value        int
-	label        string
 }
 
 // Loads the file referred to by filepath and parses it into rules used
@@ -249,10 +241,10 @@ func interactiveLabelDataSet() {
 		feature := strings.Split(line, ",", -1)
 		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
+			log.Println("Skipping line")
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.
-		FIND_RULE:
 		for ruleFeature,ruleValMap := range featToValMap {
 			instanceFeatVal, err := strconv.Atoi(feature[ruleFeature])
 			errCheck(err)
@@ -260,18 +252,14 @@ func interactiveLabelDataSet() {
 			// feature index.
 			valLabel, exists := ruleValMap[instanceFeatVal]
 			if exists {
-				label = valLabel
-				break FIND_RULE
+				label = valLabel; break
 			} else if (label == "") {
 				label = "OTHER"
 			}
 		}
-		_, err = labeledFile.WriteString(line + "," + label + NL)
-		//log.Print(feature[0], ",", feature[1], ",", feature[2], ",", feature[3])
-		//log.Println("-->", label)
+		_, err = labeledFile.WriteString(line + "," + label + "\n")
 		sleep(LOGSLP)
 		// Print labeled line to labeled file
-
 		errCheck(err)
 	}
 }
@@ -287,11 +275,12 @@ func interactiveBuildTrainAndTestSet() {
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
-	// Open the file for input and create a buffered reader for the file
+	// Open the file for input 
 	dataFile, err := os.Open(inputString, os.O_RDONLY, 0666)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
+	// Create a buffered reader for the file
 	dataReader := bufio.NewReader(dataFile)
 	var line string
 	// Create a map for storing the temporary files
@@ -302,14 +291,14 @@ func interactiveBuildTrainAndTestSet() {
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
 	line, err = dataReader.ReadString('\n') {
-		line = strings.Trim(line, NL)
+		line = strings.Trim(line, "\n")
 		feature := strings.Split(line, ",", -1)
 		label := feature[len(feature)-1]
 		tempFile, exists = tempFileMap[label]
 		countMap[label]++
 		if exists {
 			// Write to the file
-			_, err = tempFile.WriteString(line + NL)
+			_, err = tempFile.WriteString(line + "\n")
 			errCheck(err)
 		} else {
 			// Create the file and write the line
@@ -320,7 +309,7 @@ func interactiveBuildTrainAndTestSet() {
 				0666)
 			tempFileMap[label] = tempFile
 			defer tempFile.Close()
-			_, err = tempFile.WriteString(line + NL)
+			_, err = tempFile.WriteString(line + "\n")
 			errCheck(err)
 		}
 	}
