@@ -258,6 +258,7 @@ func interactiveLabelDataSet() {
 			}
 		}
 		_, err = labeledFile.WriteString(line + "," + label + "\n")
+		label = ""
 		sleep(LOGSLP)
 		// Print labeled line to labeled file
 		errCheck(err)
