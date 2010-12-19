@@ -55,19 +55,19 @@ const (
 
 // Create some reusable variables for holding information
 var (
-	err         os.Error
-	inputInt    int
-	inputString string
+	err         os.Error // The most recent error
+	inputInt    int      // Most recent user input integer
+	inputString string   // Most recent user input string
 )
 
-// Method for checking if an error has occured
+// Check if an error has occured
 func errCheck(err os.Error) {
-	if err != nil {
-		log.Exitln(err)
-	}
+	if err != nil { 
+		log.Exitln(err) 
+	} 
 }
 
-// Method for shortening the sleep call
+// Sleep used to allow the log to catch up.
 func sleep(i int64) {
 	syscall.Sleep(i)
 }
@@ -75,12 +75,13 @@ func sleep(i int64) {
 // Display a welcome message
 func displayWelcome() {
 	fmt.Println(NL + "Welcome to Arndt's Data Processor!")
-	fmt.Println(NL + COPYRIGHT + NL)
+	fmt.Println(NL + COPYRIGHT + NL) 
 	fmt.Println("Choose an option")
 	displayOptions()
 }
 
 // Print out the available options
+// The available options are stored below in a slice []opt
 func displayOptions() {
 	for i := 0; i < len(opt); i++ {
 		fmt.Println(opt[i])
@@ -88,18 +89,20 @@ func displayOptions() {
 }
 
 // The option struct is used for holding the options available to the
-// user. Although this is probably better as a map, I wanted to learn more about
-// structs in go
+// user.
+// TODO: Re-write the options to use a map instead of this struct and the
+//       following slice.
 type option struct {
 	// Holds the id of the option, what the user enters to preform the action
 	id int
 	// Holds a description of what this option will do
 	desc string
+	// Method describing the actions of the particular option.
 	do   func()
 }
 
 // The available options
-var opt []option = []option{
+var opt []option = []option {
 	{id: 0, desc: "Exit ADP", do: exit},
 	{id: 1, desc: "Label a data set", do: interactiveLabelDataSet},
 	{id: 2, desc: "Build training and test set", do: interactiveBuildTrainAndTestSet},
@@ -125,8 +128,11 @@ func loadRules(filepath string) map[int]map[int]string {
 	defer dataFile.Close()
 	// Create a buffered reader for the rule file
 	dataReader := bufio.NewReader(dataFile)
-	// Read in the contents
+	// A map which points features to another map which contains possible values 
+    // for that feature.
+	// map[featureindex->[value->label]]
 	featToValMap := map[int]map[int]string{}
+	// Read in the contents
 	for line, err := dataReader.ReadString('\n'); // read line by line
 	err == nil;                                   // loop until end of file or error
 	line, err = dataReader.ReadString('\n') {
@@ -250,13 +256,13 @@ func interactiveLabelDataSet() {
 		for ruleFeature,ruleValMap := range featToValMap {
 			instanceFeatVal, err := strconv.Atoi(feature[ruleFeature])
 			errCheck(err)
-			for featVal, valLabel := range ruleValMap {
-				if featVal == instanceFeatVal {
-					label = valLabel
-					break FIND_RULE
-				}
-			}
-			if (label == "") {
+			// Try to find the corresponding value in the map for the current
+			// feature index.
+			valLabel, exists := ruleValMap[instanceFeatVal]
+			if exists {
+				label = valLabel
+				break FIND_RULE
+			} else if (label == "") {
 				label = "OTHER"
 			}
 		}
