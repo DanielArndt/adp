@@ -57,7 +57,16 @@ var (
 	err         os.Error // The most recent error
 	inputInt    int      // Most recent user input integer
 	inputString string   // Most recent user input string
+	Stdin       *bufio.Reader
 )
+
+// Replaced the built-in fmt.Scanf with a wrapper on a buffered IO reader.
+// This is to stop additional input from being sent to the calling program
+// upon exit.
+// See: http://code.google.com/p/go/issues/detail?id=1359
+func Scanf(f string, v ...interface{}) (int, os.Error) {
+	return fmt.Fscanf(Stdin, f, v...)
+}
 
 // Check if an error has occured
 func errCheck(err os.Error) {
@@ -170,7 +179,7 @@ func main() {
 	displayWelcome()
 	fmt.Printf("> ")
 	// Read int, throw away count
-	_, err = fmt.Scanf("%d", &inputInt)
+	_, err = Scanf("%d", &inputInt)
 	errCheck(err)
 	// Write the input read
 	log.Printf("Input as int: %d\n", inputInt)
@@ -191,7 +200,7 @@ func exit() {
 	os.Exit(0)
 }
 
-//state 1
+//state 1 - Label a data set
 func interactiveLabelDataSet() {
 	// Load in the rules
 	featToValMap := loadRules("label.rules")
@@ -206,7 +215,7 @@ func interactiveLabelDataSet() {
 		"dataset")
 	fmt.Print("file name> ")
 	// Receive file name of data set
-	_, err = fmt.Scanf("%s", &inputString)
+	_, err = Scanf("%s", &inputString)
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
@@ -264,7 +273,7 @@ func interactiveLabelDataSet() {
 	}
 }
 
-// state 2
+// state 2 - Build and train test set
 func interactiveBuildTrainAndTestSet() {
 	// STEP 1:
 	// Begin building training and test set
@@ -273,7 +282,7 @@ func interactiveBuildTrainAndTestSet() {
 	fmt.Println("What file would you like to split?")
 	fmt.Print("file name> ")
 	// Receive file name of data file
-	_, err = fmt.Scanf("%s", &inputString)
+	_, err = Scanf("%s", &inputString)
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
@@ -345,7 +354,7 @@ func interactiveBuildTrainAndTestSet() {
 	for k, v := range countMap {
 		fmt.Println("label:", k, "max:", v)
 		fmt.Printf("> ")
-		fmt.Scanf("%d", &inputInt)
+		Scanf("%d", &inputInt)
 		log.Println("inputInt:", inputInt)
 		sleep(LOGSLP)
 		trainCountMap[k] = inputInt
@@ -420,13 +429,15 @@ func interactiveBuildTrainAndTestSet() {
 	fmt.Println()
 }
 
-// state 3 - UNFINISHED
+// state 3 - Edit features of a dataset
 func interactiveFeatureEditor() {
+	// STEP 1:
+	// Receive the name of the data set to work on and open the file
 	fmt.Println("\nEdit the feature set")
 	fmt.Println("--------------------")
 	fmt.Print("file name> ")
 	// Receive file name of data file
-	_, err = fmt.Scanf("%s", &inputString)
+	_, err = Scanf("%s", &inputString)
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
@@ -435,10 +446,14 @@ func interactiveFeatureEditor() {
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
+
+	// STEP 2:
+	// Allow the user to input commands, and interpret them
+
 	fmt.Print("command> ")
 	// Receive file name of data file
 	var cmd, cmdpar string
-	_, err = fmt.Scanf("%s %s", &cmd, &cmdpar)
+	_, err = Scanf("%s %s", &cmd, &cmdpar)
 	errCheck(err)
 	// Split the parameters by comma to get each individual value
 	params := strings.Split(cmdpar, ",", -1)
@@ -481,7 +496,7 @@ func interactiveFeatureEditor() {
 	// Read from file loop
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
-	line, err = dataReader.ReadString('\n') {		
+	line, err = dataReader.ReadString('\n') {
 		feature := strings.Split(line, ",", -1)
 		i := 0
 		for i<len(feature) {
@@ -489,4 +504,8 @@ func interactiveFeatureEditor() {
 			//only output those not in actList
 		}
 	}
+}
+
+func init() {
+	Stdin = bufio.NewReader(os.Stdin)
 }
