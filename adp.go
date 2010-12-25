@@ -49,7 +49,7 @@ const (
 		"you should have received with this program. For more " + "\n" +
 		"information, please visit: " + "\n" +
 		"http://web.cs.dal.ca/~darndt"
-	LOGSLP = 1
+	LOGSLP = 2
 )
 
 // Create some reusable variables for holding information
@@ -65,13 +65,17 @@ var (
 // upon exit.
 // See: http://code.google.com/p/go/issues/detail?id=1359
 func Scanf(f string, v ...interface{}) (int, os.Error) {
-	return fmt.Fscanf(Stdin, f, v...)
+	var n int
+	for n,err = fmt.Fscanf(Stdin, f, v...); n < 1; {
+		n,err = fmt.Fscanf(Stdin, f, v...)
+	}
+	return n,err
 }
 
 // Check if an error has occured
 func errCheck(err os.Error) {
 	if err != nil { 
-		log.Exitln(err) 
+		log.Exitln("Error:",err) 
 	} 
 }
 
