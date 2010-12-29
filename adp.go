@@ -418,6 +418,14 @@ func interactiveBuildTrainAndTestSet() {
 				}
 				lineCount++
 			}
+		} else {
+			// None of the label were requested in the training set, so dump to test
+			for line, err = dataReader.ReadString('\n'); // read line by line
+			err == nil;                                  // stop on error
+			line, err = dataReader.ReadString('\n') {
+				_, err = testFile.WriteString(line)
+				errCheck(err)
+			}
 		}
 	}
 
