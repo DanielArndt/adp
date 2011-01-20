@@ -323,12 +323,14 @@ func interactiveBuildTrainAndTestSet() {
 		} else {
 			// Create the file and write the line
 			log.Println("Creating temporary file:", dataFile.Name()+"."+label+".tmp") 
+			tempFileName := dataFile.Name()+"."+label+".tmp"
 			tempFile, err := os.Open(
-				dataFile.Name()+"."+label+".tmp",
+				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 				0666)
 			tempFileMap[label] = tempFile
 			defer tempFile.Close()
+			defer os.Remove(tempFileName)
 			_, err = tempFile.WriteString(line + "\n")
 			errCheck(err)
 		}
@@ -388,37 +390,43 @@ func interactiveBuildTrainAndTestSet() {
 
 	for k, v := range trainCountMap {
 		log.Println("label:", k, "count:", v)
-		sleep(1)
-		// Generate a random permuation
-		rand := rand.Perm(countMap[k])
-		// cut and use the first v of them
-		rand = rand[0:v]
-		// sort the ints
-		sort.SortInts(rand)
-		log.Println("rand:", rand)
-		// Read through the file, writing the included instances to
-		// .train and the others to .test
-		dataReader := bufio.NewReader(tempFileMap[k])
-		lineCount := 0
-		if len(rand) != 0 {
-			for line, err = dataReader.ReadString('\n'); // read line by line
-			err == nil;                                  // stop on error
-			line, err = dataReader.ReadString('\n') {
-				if lineCount == rand[0] {
-					_, err = trainFile.WriteString(line)
-					errCheck(err)
-					if len(rand) > 1 {
-						rand = rand[1:len(rand)]
+		sleep(LOGSLP)
+		if v > 0 {
+			// Generate a random permuation
+			rand := rand.Perm(countMap[k])
+			// use a slice the first /v/ of them
+			rand = rand[0:v]
+			// sort the ints so that as we iterate through each instance we can
+			// easily find the next one we need to export
+			sort.SortInts(rand)
+			log.Println("rand:", rand)
+			// Read through the file, writing the included instances to
+			// .train and the others to .test
+			dataReader := bufio.NewReader(tempFileMap[k])
+			lineCount := 0
+			if len(rand) > 0 {
+				for line, err = dataReader.ReadString('\n'); // read line by line
+				err == nil;                                  // stop on error
+				line, err = dataReader.ReadString('\n') {
+					if lineCount == rand[0] {
+						_, err = trainFile.WriteString(line)
+						errCheck(err)
+						if len(rand) > 1 {
+							rand = rand[1:len(rand)]
+						} else {
+							rand[0] = -1 // skip the rest
+						}
 					} else {
-						rand[0] = -1 // skip the rest
+						_, err = testFile.WriteString(line)
+						errCheck(err)
 					}
-				} else {
-					_, err = testFile.WriteString(line)
-					errCheck(err)
+					lineCount++
 				}
-				lineCount++
+			} else {
+				
 			}
 		} else {
+			//TODO: Add a handler for -1
 			// None of the label were requested in the training set, so dump to test
 			for line, err = dataReader.ReadString('\n'); // read line by line
 			err == nil;                                  // stop on error
@@ -427,16 +435,6 @@ func interactiveBuildTrainAndTestSet() {
 				errCheck(err)
 			}
 		}
-	}
-
-	// STEP 5:
-	// Cleanup: Remove the tempFiles
-
-	for _, v := range tempFileMap {
-		fileName := v.Name()
-		log.Println("Deleting temporary file:", fileName)
-		v.Close()
-		os.Remove(fileName)
 	}
 	fmt.Println()
 }
