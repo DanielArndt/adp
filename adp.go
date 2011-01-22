@@ -49,7 +49,7 @@ const (
 		"you should have received with this program. For more " + "\n" +
 		"information, please visit: " + "\n" +
 		"http://web.cs.dal.ca/~darndt"
-	LOGSLP = 1
+	LOGSLP = 2
 )
 
 // Create some reusable variables for holding information
@@ -57,12 +57,25 @@ var (
 	err         os.Error // The most recent error
 	inputInt    int      // Most recent user input integer
 	inputString string   // Most recent user input string
+	Stdin       *bufio.Reader
 )
+
+// Replaced the built-in fmt.Scanf with a wrapper on a buffered IO reader.
+// This is to stop additional input from being sent to the calling program
+// upon exit.
+// See: http://code.google.com/p/go/issues/detail?id=1359
+func Scanf(f string, v ...interface{}) (int, os.Error) {
+	var n int
+	for n,err = fmt.Fscanf(Stdin, f, v...); n < 1; {
+		n,err = fmt.Fscanf(Stdin, f, v...)
+	}
+	return n,err
+}
 
 // Check if an error has occured
 func errCheck(err os.Error) {
 	if err != nil { 
-		log.Exitln(err) 
+		log.Exitln("Error:",err) 
 	} 
 }
 
@@ -105,7 +118,7 @@ var opt []option = []option {
 	{id: 0, desc: "Exit ADP", do: exit},
 	{id: 1, desc: "Label a data set", do: interactiveLabelDataSet},
 	{id: 2, desc: "Build training and test set", do: interactiveBuildTrainAndTestSet},
-	{id: 3, desc: "Edit the feature set", do: interactiveFeatureEditor},
+	{id: 3, desc: "Edit the feature set (UNFINISHED)", do: interactiveFeatureEditor},
 }
 
 // Loads the file referred to by filepath and parses it into rules used
@@ -170,7 +183,7 @@ func main() {
 	displayWelcome()
 	fmt.Printf("> ")
 	// Read int, throw away count
-	_, err = fmt.Scanf("%d", &inputInt)
+	_, err = Scanf("%d", &inputInt)
 	errCheck(err)
 	// Write the input read
 	log.Printf("Input as int: %d\n", inputInt)
@@ -182,7 +195,6 @@ func main() {
 		fmt.Println("Invalid input")
 		fmt.Println()
 	}
-	
 	// ------------------------------
 }
 
@@ -192,7 +204,7 @@ func exit() {
 	os.Exit(0)
 }
 
-//state 1
+//state 1 - Label a data set
 func interactiveLabelDataSet() {
 	// Load in the rules
 	featToValMap := loadRules("label.rules")
@@ -207,7 +219,7 @@ func interactiveLabelDataSet() {
 		"dataset")
 	fmt.Print("file name> ")
 	// Receive file name of data set
-	_, err = fmt.Scanf("%s", &inputString)
+	_, err = Scanf("%s", &inputString)
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
@@ -265,18 +277,20 @@ func interactiveLabelDataSet() {
 	}
 }
 
-//state 2
+// state 2 - Build and train test set
 func interactiveBuildTrainAndTestSet() {
+	// STEP 1:
 	// Begin building training and test set
+
 	fmt.Println("Building train and test set")
 	fmt.Println("What file would you like to split?")
 	fmt.Print("file name> ")
 	// Receive file name of data file
-	_, err = fmt.Scanf("%s", &inputString)
+	_, err = Scanf("%s", &inputString)
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
-	// Open the file for input 
+	// Open the file for reading
 	dataFile, err := os.Open(inputString, os.O_RDONLY, 0666)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
@@ -284,14 +298,19 @@ func interactiveBuildTrainAndTestSet() {
 	// Create a buffered reader for the file
 	dataReader := bufio.NewReader(dataFile)
 	var line string
+
+	// STEP 2:
 	// Create a map for storing the temporary files
+
 	tempFileMap := map[string]*os.File{}
 	countMap := map[string]int{}
 	var exists bool // For checking if element exists
-	var tempFile *os.File
+	var tempFile *os.File // Place holder for the temporary file
+	                      // which is to be put in the map.
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
 	line, err = dataReader.ReadString('\n') {
+		// This is where we split up each label into its own file.
 		line = strings.Trim(line, "\n")
 		feature := strings.Split(line, ",", -1)
 		label := feature[len(feature)-1]
@@ -303,13 +322,15 @@ func interactiveBuildTrainAndTestSet() {
 			errCheck(err)
 		} else {
 			// Create the file and write the line
-			log.Println("Creating temporary file:", dataFile.Name()+"."+label) 
+			log.Println("Creating temporary file:", dataFile.Name()+"."+label+".tmp") 
+			tempFileName := dataFile.Name()+"."+label+".tmp"
 			tempFile, err := os.Open(
-				dataFile.Name()+"."+label,
+				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 				0666)
 			tempFileMap[label] = tempFile
 			defer tempFile.Close()
+			defer os.Remove(tempFileName)
 			_, err = tempFile.WriteString(line + "\n")
 			errCheck(err)
 		}
@@ -326,7 +347,12 @@ func interactiveBuildTrainAndTestSet() {
 		// We do not need this file after, so close it upon leaving this method
 		defer tempFileMap[k].Close()
 	}
-	// Hold the amount of each label we'd like in the training set
+
+	// STEP 3: 
+	// Receive the number of each label (class) we'd like to add to the training
+	// set
+
+	// Hold the amount of each label we'd like in the training set in a map
 	trainCountMap := map[string]int{}
 	fmt.Println("Please enter the number of each type of label you'd")
 	fmt.Println("like in the training set. Enter -1 for no bias")
@@ -334,7 +360,7 @@ func interactiveBuildTrainAndTestSet() {
 	for k, v := range countMap {
 		fmt.Println("label:", k, "max:", v)
 		fmt.Printf("> ")
-		fmt.Scanf("%d", &inputInt)
+		Scanf("%d", &inputInt)
 		log.Println("inputInt:", inputInt)
 		sleep(LOGSLP)
 		trainCountMap[k] = inputInt
@@ -358,58 +384,70 @@ func interactiveBuildTrainAndTestSet() {
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer testFile.Close()
-	//trainIncMap := map[int] bool {}
+
+	// STEP 4:
+	// Read the correct amount of each label in
+
 	for k, v := range trainCountMap {
-		// trainIncMap = map[int] bool {}
 		log.Println("label:", k, "count:", v)
-		sleep(1)
-		// Generate a random permuation
-		rand := rand.Perm(countMap[k])
-		// cut and use the first v of them
-		rand = rand[0:v]
-		// sort the ints
-		sort.SortInts(rand)
-		log.Println("rand:", rand)
-		// Read through the file, writing the included instances to
-		// .train and the others to .test
-		dataReader := bufio.NewReader(tempFileMap[k])
-		count := 0
-		if len(rand) != 0 {
+		sleep(LOGSLP)
+		if v > 0 {
+			// Generate a random permuation
+			rand := rand.Perm(countMap[k])
+			// use a slice the first /v/ of them
+			rand = rand[0:v]
+			// sort the ints so that as we iterate through each instance we can
+			// easily find the next one we need to export
+			sort.SortInts(rand)
+			log.Println("rand:", rand)
+			// Read through the file, writing the included instances to
+			// .train and the others to .test
+			dataReader := bufio.NewReader(tempFileMap[k])
+			lineCount := 0
+			if len(rand) > 0 {
+				for line, err = dataReader.ReadString('\n'); // read line by line
+				err == nil;                                  // stop on error
+				line, err = dataReader.ReadString('\n') {
+					if lineCount == rand[0] {
+						_, err = trainFile.WriteString(line)
+						errCheck(err)
+						if len(rand) > 1 {
+							rand = rand[1:len(rand)]
+						} else {
+							rand[0] = -1 // skip the rest
+						}
+					} else {
+						_, err = testFile.WriteString(line)
+						errCheck(err)
+					}
+					lineCount++
+				}
+			} else {
+				
+			}
+		} else {
+			//TODO: Add a handler for -1
+			// None of the label were requested in the training set, so dump to test
 			for line, err = dataReader.ReadString('\n'); // read line by line
 			err == nil;                                  // stop on error
 			line, err = dataReader.ReadString('\n') {
-				if count == rand[0] {
-					_, err = trainFile.WriteString(line)
-					errCheck(err)
-					if len(rand) > 1 {
-						rand = rand[1:len(rand)]
-					} else {
-						rand[0] = -1 // skip the rest
-					}
-				} else {
-					_, err = testFile.WriteString(line)
-					errCheck(err)
-				}
-				count++
+				_, err = testFile.WriteString(line)
+				errCheck(err)
 			}
 		}
-	}
-	// Remove the tempFiles
-	for _, v := range tempFileMap {
-		fileName := v.Name()
-		log.Println("Deleting temporary file:", fileName)
-		v.Close()
-		os.Remove(fileName)
 	}
 	fmt.Println()
 }
 
+// state 3 - Edit features of a dataset
 func interactiveFeatureEditor() {
+	// STEP 1:
+	// Receive the name of the data set to work on and open the file
 	fmt.Println("\nEdit the feature set")
 	fmt.Println("--------------------")
 	fmt.Print("file name> ")
 	// Receive file name of data file
-	_, err = fmt.Scanf("%s", &inputString)
+	_, err = Scanf("%s", &inputString)
 	errCheck(err)
 	log.Println("Opening file:", inputString)
 	sleep(LOGSLP)
@@ -419,10 +457,13 @@ func interactiveFeatureEditor() {
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
 
+	// STEP 2:
+	// Allow the user to input commands, and interpret them
+
 	fmt.Print("command> ")
 	// Receive file name of data file
 	var cmd, cmdpar string
-	_, err = fmt.Scanf("%s %s", &cmd, &cmdpar)
+	_, err = Scanf("%s %s", &cmd, &cmdpar)
 	errCheck(err)
 	// Split the parameters by comma to get each individual value
 	params := strings.Split(cmdpar, ",", -1)
@@ -459,14 +500,13 @@ func interactiveFeatureEditor() {
 		// Print out each element in the action list
 		log.Println("actList", i, "::", actList[i])
 	}
-	sleep(LOGSLP)
-	
+	sleep(LOGSLP)	
 	dataReader := bufio.NewReader(dataFile)
 	var line string
 	// Read from file loop
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
-	line, err = dataReader.ReadString('\n') {		
+	line, err = dataReader.ReadString('\n') {
 		feature := strings.Split(line, ",", -1)
 		i := 0
 		for i<len(feature) {
@@ -474,4 +514,8 @@ func interactiveFeatureEditor() {
 			//only output those not in actList
 		}
 	}
+}
+
+func init() {
+	Stdin = bufio.NewReader(os.Stdin)
 }
