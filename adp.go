@@ -52,12 +52,12 @@ const (
 	LOGSLP = 2
 )
 
-// Create some reusable variables for holding information
+// Create some reusable variables
 var (
 	err         os.Error // The most recent error
 	inputInt    int      // Most recent user input integer
 	inputString string   // Most recent user input string
-	Stdin       *bufio.Reader
+	Stdin       *bufio.Reader // Used by the Scanf function
 )
 
 // Replaced the built-in fmt.Scanf with a wrapper on a buffered IO reader.
@@ -178,18 +178,20 @@ func loadRules(filepath string) map[int]map[int]string {
 	return featToValMap
 }
 
+func init() {
+	Stdin = bufio.NewReader(os.Stdin)
+}
+
 func main() {
 	// MAIN ------------------------- 
 	displayWelcome()
 	fmt.Printf("> ")
-	// Read int, throw away count
-	_, err = Scanf("%d", &inputInt)
-	errCheck(err)
-	// Write the input read
+	// Read in an int as the state to go to.
+	_, err = Scanf("%d", &inputInt); errCheck(err)
 	log.Printf("Input as int: %d\n", inputInt)
 	sleep(LOGSLP)
 	if inputInt >= 0 && inputInt < len(opt) {
-		//Execute the method in the structs "do" field
+		//Execute the method in the opt struct's "do" field
 		opt[inputInt].do()
 	} else {
 		fmt.Println("Invalid input")
@@ -514,8 +516,4 @@ func interactiveFeatureEditor() {
 			//only output those not in actList
 		}
 	}
-}
-
-func init() {
-	Stdin = bufio.NewReader(os.Stdin)
 }
