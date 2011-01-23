@@ -49,7 +49,7 @@ const (
 		"you should have received with this program. For more " + "\n" +
 		"information, please visit: " + "\n" +
 		"http://web.cs.dal.ca/~darndt"
-	LOGSLP = 2
+	LOGSLP = 50000
 )
 
 // Create some reusable variables
@@ -96,29 +96,24 @@ func displayWelcome() {
 // The available options are stored below in a slice []opt
 func displayOptions() {
 	for i := 0; i < len(opt); i++ {
-		fmt.Println(opt[i])
+		fmt.Println(i, ":", opt[i].desc)
 	}
 }
 
 // The option struct is used for holding the options available to the
 // user.
-// TODO: Re-write the options to use a map instead of this struct and the
-//       following slice.
 type option struct {
-	// Holds the id of the option, what the user enters to preform the action
-	id int
 	// Holds a description of what this option will do
 	desc string
 	// Method describing the actions of the particular option.
 	do   func()
 }
 
-// The available options
-var opt []option = []option {
-	{id: 0, desc: "Exit ADP", do: exit},
-	{id: 1, desc: "Label a data set", do: interactiveLabelDataSet},
-	{id: 2, desc: "Build training and test set", do: interactiveBuildTrainAndTestSet},
-	{id: 3, desc: "Edit the feature set (UNFINISHED)", do: interactiveFeatureEditor},
+// Here we define all the possible options for the user in the initial state
+var opt = map[int]option {
+0:{"Exit", exit}, 
+1:{"Label Data Set",interactiveLabelDataSet},
+2:{"Build trainind and test set", interactiveBuildTrainAndTestSet},
 }
 
 // Loads the file referred to by filepath and parses it into rules used
