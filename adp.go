@@ -54,9 +54,9 @@ const (
 
 // Create some reusable variables
 var (
-	err         os.Error // The most recent error
-	inputInt    int      // Most recent user input integer
-	inputString string   // Most recent user input string
+	err         os.Error      // The most recent error
+	inputInt    int           // Most recent user input integer
+	inputString string        // Most recent user input string
 	Stdin       *bufio.Reader // Used by the Scanf function
 )
 
@@ -66,22 +66,22 @@ var (
 // See: http://code.google.com/p/go/issues/detail?id=1359
 func Scanf(f string, v ...interface{}) (int, os.Error) {
 	var n int
-	for n,err = fmt.Fscanf(Stdin, f, v...); n < 1; {
-		n,err = fmt.Fscanf(Stdin, f, v...)
+	for n, err = fmt.Fscanf(Stdin, f, v...); n < 1; {
+		n, err = fmt.Fscanf(Stdin, f, v...)
 	}
-	return n,err
+	return n, err
 }
 
-func debugMsg(v ...interface{}){
-   fmt.Print("DEBUG: ")
+func debugMsg(v ...interface{}) {
+	fmt.Print("DEBUG: ")
 	fmt.Println(v...)
 }
 
 // Check if an error has occured
 func errCheck(err os.Error) {
-	if err != nil { 
-		log.Exitln("Error:",err) 
-	} 
+	if err != nil {
+		log.Exitln("Error:", err)
+	}
 }
 
 // Sleep used to allow the log to catch up.
@@ -92,7 +92,7 @@ func sleep(i int64) {
 // Display a welcome message
 func displayWelcome() {
 	fmt.Println("\nWelcome to Arndt's Data Processor!")
-	fmt.Println("\n" + COPYRIGHT + "\n") 
+	fmt.Println("\n" + COPYRIGHT + "\n")
 	fmt.Println("Choose an option")
 	displayOptions()
 }
@@ -111,14 +111,14 @@ type option struct {
 	// Holds a description of what this option will do
 	desc string
 	// Method describing the actions of the particular option.
-	do   func()
+	do func()
 }
 
 // Here we define all the possible options for the user in the initial state
-var opt = map[int]option {
-0:{"Exit", exit}, 
-1:{"Label Data Set",interactiveLabelDataSet},
-2:{"Build trainind and test set", interactiveBuildTrainAndTestSet},
+var opt = map[int]option{
+	0: {"Exit", exit},
+	1: {"Label Data Set", interactiveLabelDataSet},
+	2: {"Build trainind and test set", interactiveBuildTrainAndTestSet},
 }
 
 // Loads the file referred to by filepath and parses it into rules used
@@ -133,7 +133,7 @@ func loadRules(filepath string) map[int]map[int]string {
 	// Create a buffered reader for the rule file
 	dataReader := bufio.NewReader(dataFile)
 	// A map which points features to another map which contains possible values 
-    // for that feature.
+	// for that feature.
 	// map[featureindex->[value->label]]
 	featToValMap := map[int]map[int]string{}
 	// Read in the contents
@@ -167,7 +167,7 @@ func loadRules(filepath string) map[int]map[int]string {
 				if exists {
 					featToValMap[featureIndex][value] = label
 				} else {
-					featToValMap[featureIndex] = map[int]string{value:label}
+					featToValMap[featureIndex] = map[int]string{value: label}
 				}
 			}
 		}
@@ -184,7 +184,8 @@ func main() {
 	displayWelcome()
 	fmt.Printf("> ")
 	// Read in an int as the state to go to.
-	_, err = Scanf("%d", &inputInt); errCheck(err)
+	_, err = Scanf("%d", &inputInt)
+	errCheck(err)
 	debugMsg("Input as int:", inputInt)
 	if inputInt >= 0 && inputInt < len(opt) {
 		//Execute the method in the opt struct's "do" field
@@ -207,7 +208,7 @@ func interactiveLabelDataSet() {
 	// Load in the rules
 	featToValMap := loadRules("label.rules")
 	// Read out the maps stored for each feature
-	for k,v := range featToValMap {
+	for k, v := range featToValMap {
 		debugMsg("key:", k, "val:", v)
 	}
 	// Begin labeling the data set
@@ -226,13 +227,13 @@ func interactiveLabelDataSet() {
 	defer dataFile.Close()
 	dataReader := bufio.NewReader(dataFile)
 	// Open a file for the labeled training set
-	debugMsg("Opening file:", dataFile.Name() + ".labeled")
+	debugMsg("Opening file:", dataFile.Name()+".labeled")
 	labeledFile, err := os.Open(
 		dataFile.Name()+".labeled",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
 	errCheck(err)
-	debugMsg("Writing to file:", dataFile.Name() + ".labeled")
+	debugMsg("Writing to file:", dataFile.Name()+".labeled")
 	debugMsg("This may take a while")
 	// We do not need this file after, so close it upon leaving this method
 	defer labeledFile.Close()
@@ -251,21 +252,22 @@ func interactiveLabelDataSet() {
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.
-		for ruleFeature,ruleValMap := range featToValMap {
+		for ruleFeature, ruleValMap := range featToValMap {
 			instanceFeatVal, err := strconv.Atoi(feature[ruleFeature])
 			errCheck(err)
 			// Try to find the corresponding value in the map for the current
 			// feature index.
 			valLabel, exists := ruleValMap[instanceFeatVal]
 			if exists {
-				label = valLabel; break
-			} else if (label == "") {
+				label = valLabel
+				break
+			} else if label == "" {
 				label = "OTHER"
 			}
 		}
-      // Write labeled line to labeled file
+		// Write labeled line to labeled file
 		_, err = labeledFile.WriteString(line + "," + label + "\n")
-      errCheck(err)
+		errCheck(err)
 		label = ""
 	}
 }
@@ -296,9 +298,9 @@ func interactiveBuildTrainAndTestSet() {
 
 	tempFileMap := map[string]*os.File{}
 	countMap := map[string]int{}
-	var exists bool // For checking if element exists
+	var exists bool       // For checking if element exists
 	var tempFile *os.File // Place holder for the temporary file
-	                      // which is to be put in the map.
+	// which is to be put in the map.
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
 	line, err = dataReader.ReadString('\n') {
@@ -314,8 +316,8 @@ func interactiveBuildTrainAndTestSet() {
 			errCheck(err)
 		} else {
 			// Create the file and write the line
-			log.Println("Creating temporary file:", dataFile.Name()+"."+label+".tmp") 
-			tempFileName := dataFile.Name()+"."+label+".tmp"
+			log.Println("Creating temporary file:", dataFile.Name()+"."+label+".tmp")
+			tempFileName := dataFile.Name() + "." + label + ".tmp"
 			tempFile, err := os.Open(
 				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
@@ -355,7 +357,7 @@ func interactiveBuildTrainAndTestSet() {
 		debugMsg("inputInt:", inputInt)
 		trainCountMap[k] = inputInt
 	}
-   debugMsg("Creating:", dataFile.Name()+".train")
+	debugMsg("Creating:", dataFile.Name()+".train")
 	debugMsg("Creating:", dataFile.Name()+".test")
 	// Open a file for writing training data
 	trainFile, err := os.Open(
@@ -410,7 +412,7 @@ func interactiveBuildTrainAndTestSet() {
 					lineCount++
 				}
 			} else {
-				
+
 			}
 		} else {
 			//TODO: Add a handler for -1
@@ -476,16 +478,16 @@ func interactiveFeatureEditor() {
 				actList = append(actList, j)
 			}
 		} else {
-			log.Exitln("Error splitting parameters. len(splitParams):", 
+			log.Exitln("Error splitting parameters. len(splitParams):",
 				len(splitParams))
 		}
 	}
 	sort.SortInts(actList)
 	for i := 0; i < len(actList); i++ {
 		// Print out each element in the action list
-		debugMsg("actList", i, "::", actList[i])g
+		debugMsg("actList", i, "::", actList[i])
 	}
-	sleep(LOGSLP)	
+	sleep(LOGSLP)
 	dataReader := bufio.NewReader(dataFile)
 	var line string
 	// Read from file loop
@@ -494,7 +496,7 @@ func interactiveFeatureEditor() {
 	line, err = dataReader.ReadString('\n') {
 		feature := strings.Split(line, ",", -1)
 		i := 0
-		for i<len(feature) {
+		for i < len(feature) {
 			//diff := actList[i] - i
 			//only output those not in actList
 		}
