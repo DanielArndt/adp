@@ -454,7 +454,7 @@ func interactiveFeatureEditor() {
 	// Split the parameters by comma to get each individual value
 	params := strings.Split(cmdpar, ",", -1)
 	debugMsg("CMD:", cmd)
-	debugMsg("PAR:", cmdpar))
+	debugMsg("PAR:", cmdpar)
 	// List holding the items on which to act upon
 	var actList []int
 	var splitParams []string
@@ -462,7 +462,7 @@ func interactiveFeatureEditor() {
 	var intParam, intParamEnd int
 	for i := 0; i < len(params); i++ {
 		// Deal with each individual parameter
-		debugMsg("PAR", i, "::", params[i]
+		debugMsg("PAR", i, "::", params[i])
 		splitParams = strings.Split(params[i], "-", -1)
 		if len(splitParams) == 1 {
 			intParam, err = strconv.Atoi(splitParams[0])
@@ -483,7 +483,7 @@ func interactiveFeatureEditor() {
 	sort.SortInts(actList)
 	for i := 0; i < len(actList); i++ {
 		// Print out each element in the action list
-		debugMsg("actList", i, "::", actList[i]))
+		debugMsg("actList", i, "::", actList[i])g
 	}
 	sleep(LOGSLP)	
 	dataReader := bufio.NewReader(dataFile)
