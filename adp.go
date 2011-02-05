@@ -153,7 +153,7 @@ func loadRules(filepath string) map[int]map[int]string {
 			// Make a struct for each feature index
 			for i := 0; i < len(feature); i++ {
 				debugMsg("Making label rule:")
-				debugMsg("if", feature[i], "==", field[1], "{")
+				debugMsg("if feature \"", feature[i], "\" == \"", field[1], "\" {")
 				debugMsg("\tlabel =", field[2])
 				debugMsg("}")
 				// Read in some values
@@ -234,7 +234,7 @@ func interactiveLabelDataSet() {
 		0666)
 	errCheck(err)
 	debugMsg("Writing to file:", dataFile.Name()+".labeled")
-	debugMsg("This may take a while")
+	debugMsg("Labeling... this may take a while")
 	// We do not need this file after, so close it upon leaving this method
 	defer labeledFile.Close()
 	// Create a variable for the line read, and the label assigned
@@ -248,7 +248,7 @@ func interactiveLabelDataSet() {
 		feature := strings.Split(line, ",", -1)
 		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
-			debugMsg("Skipping line")
+			debugMsg("Skipping line due to abnormal formation")
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.
