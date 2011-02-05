@@ -80,7 +80,7 @@ func debugMsg(v ...interface{}) {
 // Check if an error has occured
 func errCheck(err os.Error) {
 	if err != nil {
-		log.Exitln("Error:", err)
+		log.Fatalln("Error:", err)
 	}
 }
 
@@ -138,7 +138,7 @@ func loadRules(filepath string) map[int]map[int]string {
 	featToValMap := map[int]map[int]string{}
 	// Read in the contents
 	for line, err := dataReader.ReadString('\n'); // read line by line
-	err == nil;                                   // loop until end of file or error
+	err == nil;                  // loop until end of file or error
 	line, err = dataReader.ReadString('\n') {
 		// Trim newline from end
 		line = strings.TrimRight(line, "\n")
@@ -147,28 +147,34 @@ func loadRules(filepath string) map[int]map[int]string {
 			debugMsg("Skipping line due to comment:", line)
 		} else {
 			// Split by fields
-			field := strings.Fields(line)
-			// Deal with comma seperated feature indexes
-			feature := strings.Split(field[0], ",", -1)
-			// Make a struct for each feature index
-			for i := 0; i < len(feature); i++ {
-				debugMsg("Making label rule:")
-				debugMsg("if feature \"", feature[i], "\" == \"", field[1], "\" {")
-				debugMsg("\tlabel =", field[2])
-				debugMsg("}")
-				// Read in some values
-				featureIndex, err := strconv.Atoi(feature[i])
-				errCheck(err)
-				value, err := strconv.Atoi(field[1])
-				errCheck(err)
-				label := field[2]
-				errCheck(err)
-				_, exists := featToValMap[featureIndex]
-				if exists {
-					featToValMap[featureIndex][value] = label
-				} else {
-					featToValMap[featureIndex] = map[int]string{value: label}
+			fields := strings.Fields(line)
+			if len(fields) == 3 {
+				// Deal with comma seperated feature indexes
+				features := strings.Split(fields[0], ",", -1)
+				// Make a struct for each feature index
+				for i := 0; i < len(features); i++ {
+					debugMsg("Making label rule:")
+					debugMsg("if feature [", features[i], "] == [", fields[1], "] {")
+					debugMsg("\tlabel =", fields[2])
+					debugMsg("}")
+					// Read in some values
+					featureIndex, err := strconv.Atoi(features[i])
+					errCheck(err)
+					value, err := strconv.Atoi(fields[1])
+					errCheck(err)
+					label := fields[2]
+					errCheck(err)
+					_, exists := featToValMap[featureIndex]
+					if exists {
+						featToValMap[featureIndex][value] = label
+					} else {
+						featToValMap[featureIndex] = map[int]string{value: label}
+					}
 				}
+			} else {
+				debugMsg("Malformed line: \"" + line + "\"")
+				debugMsg("Length:", len(line))
+				debugMsg("Err:",err)
 			}
 		}
 	}
@@ -241,7 +247,7 @@ func interactiveLabelDataSet() {
 	var line, label string
 	// Loop over each line of the file
 	for line, err = dataReader.ReadString('\n'); // read line by line
-	err == nil;                                  // stop on error
+	err == nil;                                  // stop on error or end of file
 	line, err = dataReader.ReadString('\n') {
 		line = strings.TrimRight(line, "\n")
 		// Split the line into it's feature values
@@ -478,7 +484,7 @@ func interactiveFeatureEditor() {
 				actList = append(actList, j)
 			}
 		} else {
-			log.Exitln("Error splitting parameters. len(splitParams):",
+			log.Fatalln("Error splitting parameters. len(splitParams):",
 				len(splitParams))
 		}
 	}
