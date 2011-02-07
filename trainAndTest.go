@@ -12,6 +12,11 @@ import (
 
 // state 2 - Build and train test set
 func interactiveBuildTrainAndTestSet() {
+	var (
+		err os.Error
+		inputString string
+		inputInt int
+	)
 	// STEP 1:
 	// Begin building training and test set
 
