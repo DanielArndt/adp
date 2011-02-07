@@ -3,7 +3,6 @@ package main
 import (
     "bufio"
     "fmt"
-    "log"
     "os"
     "rand"
     "sort"
@@ -59,8 +58,8 @@ func interactiveBuildTrainAndTestSet() {
 			errCheck(err)
 		} else {
 			// Create the file and write the line
-			log.Println("Creating temporary file:", dataFile.Name()+"."+label+".tmp")
 			tempFileName := dataFile.Name() + "." + label + ".tmp"
+			debugMsg("Creating temporary file:", tempFileName)
 			tempFile, err := os.Open(
 				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
