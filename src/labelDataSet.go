@@ -8,10 +8,11 @@ import (
     "strings"
 )
 
+// This uses the quick method where maps are used. This is only for sets
+// of rules which have no conflicts and have a simple format "if coloumn
+// x = value then label is y.
 
-// Loads the file referred to by filepath and parses it into rules used
-// to label a data set. [fig 1]
-func loadRules(filepath string) map[int]map[int]string {
+func quickRules(filepath string) map[int]map[int]string {
 	// list to return which contains the parsed rules
 	debugMsg("Opening file \"" + filepath + "\"")
 	// Open the rule file
@@ -71,8 +72,24 @@ func loadRules(filepath string) map[int]map[int]string {
 
 //state 1 - Label a data set
 func interactiveLabelDataSet() {
+	var (
+		featToValMap map[int]map[int]string
+		err          os.Error
+		inputInt     int
+		inputString  string
+	)
 	// Load in the rules
-	featToValMap := loadRules("label.rules")
+	fmt.Println("Which rule method would you like to use?")
+	fmt.Println("0 : quick rules")
+	fmt.Println("1 : extended rules (unfinished)")
+	fmt.Print("> ")
+	_, err = Scanf("%d", &inputInt)
+	errCheck(err)
+	switch inputInt {
+	case 0:
+		featToValMap = quickRules("label.rules")
+	}
+
 	// Read out the maps stored for each feature
 	for k, v := range featToValMap {
 		debugMsg("port:", k, v)
