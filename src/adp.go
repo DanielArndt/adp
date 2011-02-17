@@ -59,10 +59,9 @@ var (
 // upon exit.
 // See: http://code.google.com/p/go/issues/detail?id=1359
 func Scanf(f string, v ...interface{}) (int, os.Error) {
-	var (
-		n int
-		err os.Error
-	)
+	var n int
+	var err os.Error
+
 	for n, err = fmt.Fscanf(Stdin, f, v...); n < 1; {
 		n, err = fmt.Fscanf(Stdin, f, v...)
 	}
@@ -119,10 +118,9 @@ func init() {
 }
 
 func main() {
-	var (
-		err os.Error
-		inputInt int
-	)
+	var err os.Error
+	var	inputInt int
+	
 	// MAIN ------------------------- 
 	displayWelcome()
 	fmt.Printf("> ")
@@ -150,10 +148,9 @@ func exit() {
 
 // state 3 - Edit features of a dataset
 func interactiveFeatureEditor() {
-	var (
-		err os.Error
-		inputString string
-	)
+	var err os.Error
+	var inputString string
+	
 	// STEP 1:
 	// Receive the name of the data set to work on and open the file
 	fmt.Println("\nEdit the feature set")
