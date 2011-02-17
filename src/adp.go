@@ -33,7 +33,6 @@ import (
 	"log"
 	"sort"
 	"os"
-	"syscall"
 	"strings"
 	"strconv"
 )
@@ -42,18 +41,17 @@ import (
 const (
 	TAB       = "\t"
 	COPYRIGHT = "Copyright (C) 2010 Daniel Arndt\n" +
-		"This program comes with ABSOLUTELY NO WARRANTY;\n" +
-		"This is free software, and you are welcome to redistribute it\n" +
-		"under certain conditions; please see the COPYING file which\n" +
-		"you should have received with this program. For more \n" +
+		"This program comes with ABSOLUTELY NO WARRANTY; " +
+		"This is free software, and you are welcome to redistribute it " +
+		"under certain conditions; please see the COPYING file which " +
+		"you should have received with this program. For more " +
 		"information, please visit: \n" +
 		"http://web.cs.dal.ca/~darndt"
-	LOGSLP = 50000
 )
 
 // Create some reusable variables
 var (
-	Stdin       *bufio.Reader // Used by the Scanf function
+	Stdin       *bufio.Reader // Used by our Scanf function
 )
 
 // Replaced the built-in fmt.Scanf with a wrapper on a buffered IO reader.
@@ -81,11 +79,6 @@ func errCheck(err os.Error) {
 	if err != nil {
 		log.Fatalln("Error:", err)
 	}
-}
-
-// Sleep used to allow the log to catch up.
-func sleep(i int64) {
-	syscall.Sleep(i)
 }
 
 // Display a welcome message
@@ -218,7 +211,6 @@ func interactiveFeatureEditor() {
 		// Print out each element in the action list
 		debugMsg("actList", i, "::", actList[i])
 	}
-	sleep(LOGSLP)
 	dataReader := bufio.NewReader(dataFile)
 	var line string
 	// Read from file loop
