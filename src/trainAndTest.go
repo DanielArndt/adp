@@ -123,6 +123,7 @@ func interactiveBuildTrainAndTestSet() {
 
 	for k, v := range trainCountMap {
 		debugMsg("label:", k, "count:", v)
+		dataReader := bufio.NewReader(tempFileMap[k])
 		if v > 0 {
 			// Generate a random permuation
 			rand := rand.Perm(countMap[k])
@@ -133,7 +134,6 @@ func interactiveBuildTrainAndTestSet() {
 			sort.SortInts(rand)
 			// Read through the file, writing the included instances to
 			// .train and the others to .test
-			dataReader := bufio.NewReader(tempFileMap[k])
 			lineCount := 0
 			if len(rand) > 0 {
 				for line, err = dataReader.ReadString('\n'); // read line by line
