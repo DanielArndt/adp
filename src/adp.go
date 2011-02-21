@@ -21,7 +21,7 @@
  *
  * Or the code's repository:
  *
- * http://code.google.com/p/adp
+ * http://github.com/danielarndt/adp
  *  
  */
 

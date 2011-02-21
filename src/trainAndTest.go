@@ -1,3 +1,31 @@
+/* 
+ * trainAndTest.go
+ * 
+ * Copyright (C) 2010 Daniel Arndt
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * For more information please visit my website at:
+ * http://web.cs.dal.ca/~darndt
+ *
+ * Or the code's repository:
+ *
+ * http://github.com/danielarndt/adp
+ *  
+ */
+
+
 package main
 
 import (
@@ -72,8 +100,7 @@ func interactiveBuildTrainAndTestSet() {
 		}
 	}
 	// Close and re-open the files as readable
-	debugMsg("Closing all temporary files for writing. Re-opening as")
-	debugMsg("read-only")
+	debugMsg("Closing all temporary files for writing. Re-opening as read-only.")
 	for k, v := range tempFileMap {
 		fileName := v.Name()
 		v.Close()
@@ -89,8 +116,8 @@ func interactiveBuildTrainAndTestSet() {
 
 	// Hold the amount of each label we'd like in the training set in a map
 	trainCountMap := map[string]int{}
-	fmt.Println("Please enter the number of each type of label you'd")
-	fmt.Println("like in the training set. Enter -1 for no bias")
+	fmt.Println("Please enter the number of each type of label you'd", 
+		"like in the training set. Enter -1 for no bias")
 	// Ask user how much of each label they want and put it in a map trainCountMap
 	for k, v := range countMap {
 		fmt.Println("label:", k, "max:", v)
