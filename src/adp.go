@@ -109,7 +109,7 @@ type option struct {
 var opt = map[int]option{
 	0: {"Exit", exit},
 	1: {"Label Data Set", interactiveLabelDataSet},
-	2: {"Build trainind and test set", interactiveBuildTrainAndTestSet},
+	2: {"Build training and test set", interactiveBuildTrainAndTestSet},
 }
 
 
