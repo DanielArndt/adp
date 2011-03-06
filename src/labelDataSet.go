@@ -119,7 +119,7 @@ func interactiveLabelDataSet() {
 
 	// Read out the maps stored for each feature
 	for k, v := range featToValMap {
-		debugMsg("port:", k, v)
+		debugMsg("column:", k, v)
 	}
 	// Begin labeling the data set
 	fmt.Println("Label a data set")

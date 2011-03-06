@@ -127,7 +127,6 @@ func interactiveBuildTrainAndTestSet() {
 		trainCountMap[k] = inputInt
 	}
 	debugMsg("Creating:", dataFile.Name()+".train")
-	debugMsg("Creating:", dataFile.Name()+".test")
 	// Open a file for writing training data
 	trainFile, err := os.Open(
 		dataFile.Name()+".train",
@@ -136,21 +135,21 @@ func interactiveBuildTrainAndTestSet() {
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer trainFile.Close()
-	// Open a file for writing testing data
-	testFile, err := os.Open(
-		dataFile.Name()+".test",
-		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
-		0666)
-	errCheck(err)
-	// We do not need this file after, so close it upon leaving this method
-	defer testFile.Close()
-
 	// STEP 4:
 	// Read the correct amount of each label in
 
 	for k, v := range trainCountMap {
 		debugMsg("label:", k, "count:", v)
 		dataReader := bufio.NewReader(tempFileMap[k])
+		// Open a file for writing testing data
+		testFile, err := os.Open(
+			dataFile.Name()+"."+k+".test",
+			os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
+			0666)
+		errCheck(err)
+		// We do not need this file after, so close it upon leaving this method
+		defer testFile.Close()
+
 		if v > 0 {
 			// Generate a random permuation
 			rand := rand.Perm(countMap[k])
@@ -193,6 +192,7 @@ func interactiveBuildTrainAndTestSet() {
 				errCheck(err)
 			}
 		}
+		testFile.Close()
 	}
 	fmt.Println()
 }
