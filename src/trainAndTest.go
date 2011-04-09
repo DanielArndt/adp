@@ -74,7 +74,7 @@ func interactiveBuildTrainAndTestSet() {
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
 	line, err = dataReader.ReadString('\n') {
-		// This is where we split up each label into its own file.
+		// Take each instance and write it to a label specific file
 		line = strings.Trim(line, "\n")
 		feature := strings.Split(line, ",", -1)
 		label := feature[len(feature)-1]

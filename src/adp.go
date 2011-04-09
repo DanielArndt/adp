@@ -61,7 +61,6 @@ var (
 func Scanf(f string, v ...interface{}) (int, os.Error) {
 	var n int
 	var err os.Error
-
 	for n, err = fmt.Fscanf(Stdin, f, v...); n < 1; {
 		n, err = fmt.Fscanf(Stdin, f, v...)
 	}
