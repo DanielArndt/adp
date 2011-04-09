@@ -47,11 +47,12 @@ func debugMsg(v... interface{}) {
 // Check if an error has occured
 func errCheck(err os.Error) {
 	if err != nil {
-		log.Fatalln("Error:", err)
+		debugMsg("Error:", err)
+		os.Exit(1) //Throw an error.
 	}
 }
 
-// The interactives struct is used for holding the interactive tasks
+// The interactives struct is used for describing the interactive tasks
 // available to the user.
 type interactives struct {
 	// Holds a description of what this interactive will do

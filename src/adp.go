@@ -97,6 +97,7 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
 	var err os.Error
 	var	inputInt int
 	
