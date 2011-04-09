@@ -108,7 +108,7 @@ func interactiveLabelDataSet() {
 	// Load in the rules
 	fmt.Println("Which rule method would you like to use?")
 	fmt.Println("0 : quick rules")
-	fmt.Println("1 : extended rules (unfinished)")
+//	fmt.Println("1 : extended rules (unfinished)")
 	fmt.Print("> ")
 	_, err = Scanf("%d", &inputInt)
 	errCheck(err)

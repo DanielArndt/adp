@@ -87,26 +87,27 @@ func displayWelcome() {
 	displayOptions()
 }
 
-// Print out the available options
-// The available options are stored below in a slice []opt
+// Print out the available tasks. The available tasks are stored below
+// in a slice []opt
 func displayOptions() {
 	for i := 0; i < len(opt); i++ {
 		fmt.Println(i, ":", opt[i].desc)
 	}
 }
 
-// The option struct is used for holding the options available to the
-// user.
-type option struct {
-	// Holds a description of what this option will do
+// The interactives struct is used for holding the interactive tasks
+// available to the user.
+type interactives struct {
+	// Holds a description of what this interactive will do
 	desc string
 	// Method describing the actions of the particular option.
 	do func()
 }
 
-// Here we define all the possible options for the user in the initial state
-var opt = map[int]option{
-	0: {"Exit", exit},
+// Here we define all the possible tasks for the user in the initial
+// state.
+var opt = map[int]interactives{
+	0: {"Exit the program", exit},
 	1: {"Label Data Set", interactiveLabelDataSet},
 	2: {"Build training and test set", interactiveBuildTrainAndTestSet},
 }
