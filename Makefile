@@ -4,6 +4,7 @@ TARG=adp
 SRC_DIR=src
 GOFILES=\
 	$(SRC_DIR)/adp.go\
+	$(SRC_DIR)/misc.go\
 	$(SRC_DIR)/labelDataSet.go\
 	$(SRC_DIR)/trainAndTest.go\
 
