@@ -43,7 +43,7 @@ func quickRules(filepath string) map[int]map[int]string {
 	// list to return which contains the parsed rules
 	debugMsg("Opening file \"" + filepath + "\"")
 	// Open the rule file
-	dataFile, err := os.Open(filepath, os.O_RDONLY, 0666)
+	dataFile, err := os.Open(filepath)
 	errCheck(err)
 	defer dataFile.Close()
 	// Create a buffered reader for the rule file
@@ -66,7 +66,7 @@ func quickRules(filepath string) map[int]map[int]string {
 			fields := strings.Fields(line)
 			if len(fields) == 3 {
 				// Deal with comma seperated feature indexes
-				features := strings.Split(fields[0], ",", -1)
+				features := strings.Split(fields[0], ",")
 				// Make a struct for each feature index
 				for i := 0; i < len(features); i++ {
 					debugMsg("Making label rule:")
@@ -131,14 +131,14 @@ func interactiveLabelDataSet() {
 	errCheck(err)
 	debugMsg("Opening file:", inputString)
 	// Open the file for input and create a buffered reader for the file
-	dataFile, err := os.Open(inputString, os.O_RDONLY, 0666)
+	dataFile, err := os.Open(inputString)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
 	dataReader := bufio.NewReader(dataFile)
 	// Open a file for the labeled training set
 	debugMsg("Opening file:", dataFile.Name()+".labeled")
-	labeledFile, err := os.Open(
+	labeledFile, err := os.OpenFile(
 		dataFile.Name()+".labeled",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
@@ -155,10 +155,11 @@ func interactiveLabelDataSet() {
 	line, err = dataReader.ReadString('\n') {
 		line = strings.TrimRight(line, "\n")
 		// Split the line into it's feature values
-		feature := strings.Split(line, ",", -1)
+		feature := strings.Split(line, ",")
 		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
 			debugMsg("Skipping line due to abnormal formation")
+			debugMsg("LINE: ", line)
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.

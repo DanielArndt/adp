@@ -55,7 +55,7 @@ func interactiveBuildTrainAndTestSet() {
 	errCheck(err)
 	debugMsg("Opening file:", inputString)
 	// Open the file for reading
-	dataFile, err := os.Open(inputString, os.O_RDONLY, 0666)
+	dataFile, err := os.Open(inputString)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
@@ -76,7 +76,7 @@ func interactiveBuildTrainAndTestSet() {
 	line, err = dataReader.ReadString('\n') {
 		// This is where we split up each label into its own file.
 		line = strings.Trim(line, "\n")
-		feature := strings.Split(line, ",", -1)
+		feature := strings.Split(line, ",")
 		label := feature[len(feature)-1]
 		tempFile, exists = tempFileMap[label]
 		countMap[label]++
@@ -88,7 +88,7 @@ func interactiveBuildTrainAndTestSet() {
 			// Create the file and write the line
 			tempFileName := dataFile.Name() + "." + label + ".tmp"
 			debugMsg("Creating temporary file:", tempFileName)
-			tempFile, err := os.Open(
+			tempFile, err := os.OpenFile(
 				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 				0666)
@@ -104,7 +104,7 @@ func interactiveBuildTrainAndTestSet() {
 	for k, v := range tempFileMap {
 		fileName := v.Name()
 		v.Close()
-		tempFileMap[k], err = os.Open(fileName, os.O_RDONLY, 0666)
+		tempFileMap[k], err = os.Open(fileName)
 		errCheck(err)
 		// We do not need this file after, so close it upon leaving this method
 		defer tempFileMap[k].Close()
@@ -128,7 +128,7 @@ func interactiveBuildTrainAndTestSet() {
 	}
 	debugMsg("Creating:", dataFile.Name()+".train")
 	// Open a file for writing training data
-	trainFile, err := os.Open(
+	trainFile, err := os.OpenFile(
 		dataFile.Name()+".train",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
@@ -142,7 +142,7 @@ func interactiveBuildTrainAndTestSet() {
 		debugMsg("label:", k, "count:", v)
 		dataReader := bufio.NewReader(tempFileMap[k])
 		// Open a file for writing testing data
-		testFile, err := os.Open(
+		testFile, err := os.OpenFile(
 			dataFile.Name()+"."+k+".test",
 			os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 			0666)
@@ -152,26 +152,27 @@ func interactiveBuildTrainAndTestSet() {
 
 		if v > 0 {
 			// Generate a random permuation
-			rand := rand.Perm(countMap[k])
+			var randomized sort.IntSlice
+			randomized = rand.Perm(countMap[k])
 			// use a slice the first /v/ of them
-			rand = rand[0:v]
+			randomized = randomized[0:v]
 			// sort the ints so that as we iterate through each instance we can
 			// easily find the next one we need to export
-			sort.SortInts(rand)
+			randomized.Sort()
 			// Read through the file, writing the included instances to
 			// .train and the others to .test
 			lineCount := 0
-			if len(rand) > 0 {
+			if len(randomized) > 0 {
 				for line, err = dataReader.ReadString('\n'); // read line by line
 				err == nil;                                  // stop on error
 				line, err = dataReader.ReadString('\n') {
-					if lineCount == rand[0] {
+					if lineCount == randomized[0] {
 						_, err = trainFile.WriteString(line)
 						errCheck(err)
-						if len(rand) > 1 {
-							rand = rand[1:len(rand)]
+						if len(randomized) > 1 {
+							randomized = randomized[1:len(randomized)]
 						} else {
-							rand[0] = -1 // skip the rest
+							randomized[0] = -1 // skip the rest
 						}
 					} else {
 						_, err = testFile.WriteString(line)

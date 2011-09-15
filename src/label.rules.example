@@ -3,13 +3,23 @@
 44				7		      SSH
 #Standard HTTPS port
 1,3       443       HTTPS
-#SMTP
+#SMTPS
 1,3       465       SSL
-#NNTP
+#NNTPS
 1,3       563       SSL
-#LDAP
+#LDAPS
 1,3       636       SSL
-#IMAP
+#FTPS-DATA
+1,3       989       SSL
+#FTPS
+1,3       990       SSL
+#TELNETS
+1,3       992       SSL
+#IMAPS
 1,3       993       SSL
-#POP3
+#IRCS
+1,3       994       SSL
+#POP3S
 1,3       995       SSL
+#SIPS
+1,3       5061      SSL

@@ -161,7 +161,7 @@ func interactiveFeatureEditor() {
 	errCheck(err)
 	debugMsg("Opening file:", inputString)
 	// Open the file for input and create a buffered reader for the file
-	dataFile, err := os.Open(inputString, os.O_RDONLY, 0666)
+	dataFile, err := os.Open(inputString)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
@@ -175,18 +175,18 @@ func interactiveFeatureEditor() {
 	_, err = Scanf("%s %s", &cmd, &cmdpar)
 	errCheck(err)
 	// Split the parameters by comma to get each individual value
-	params := strings.Split(cmdpar, ",", -1)
+	params := strings.Split(cmdpar, ",")
 	debugMsg("CMD:", cmd)
 	debugMsg("PAR:", cmdpar)
 	// List holding the items on which to act upon
-	var actList []int
+	var actList sort.IntSlice
 	var splitParams []string
 	// Integer form of the parameter
 	var intParam, intParamEnd int
 	for i := 0; i < len(params); i++ {
 		// Deal with each individual parameter
 		debugMsg("PAR", i, "::", params[i])
-		splitParams = strings.Split(params[i], "-", -1)
+		splitParams = strings.Split(params[i], "-")
 		if len(splitParams) == 1 {
 			intParam, err = strconv.Atoi(splitParams[0])
 			actList = append(actList, intParam)
@@ -203,7 +203,7 @@ func interactiveFeatureEditor() {
 				len(splitParams))
 		}
 	}
-	sort.SortInts(actList)
+	actList.Sort()
 	for i := 0; i < len(actList); i++ {
 		// Print out each element in the action list
 		debugMsg("actList", i, "::", actList[i])
@@ -214,7 +214,7 @@ func interactiveFeatureEditor() {
 	for line, err = dataReader.ReadString('\n'); // read line by line
 	err == nil;                                  // stop on error
 	line, err = dataReader.ReadString('\n') {
-		feature := strings.Split(line, ",", -1)
+		feature := strings.Split(line, ",")
 		i := 0
 		for i < len(feature) {
 			//diff := actList[i] - i
