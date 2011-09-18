@@ -60,7 +60,7 @@ func quickRules(filepath string) map[int]map[int]string {
 		line = strings.TrimRight(line, "\n")
 		if strings.HasPrefix(line, "#") {
 			// Ignore comments
-			debugMsg("Skipping line due to comment:", line)
+			debugMsg("Skipping line due to comment: %s", line)
 		} else {
 			// Split by fields
 			fields := strings.Fields(line)
@@ -70,8 +70,8 @@ func quickRules(filepath string) map[int]map[int]string {
 				// Make a struct for each feature index
 				for i := 0; i < len(features); i++ {
 					debugMsg("Making label rule:")
-					debugMsg("if feature [", features[i], "] == [", fields[1], "] {")
-					debugMsg("\tlabel =", fields[2])
+					debugMsg("if feature [%s]==[%s] {", features[i], fields[1])
+					debugMsg("\tlabel = %s", fields[2])
 					debugMsg("}")
 					// Read in some values
 					featureIndex, err := strconv.Atoi(features[i])
@@ -89,8 +89,8 @@ func quickRules(filepath string) map[int]map[int]string {
 				}
 			} else {
 				debugMsg("Malformed line: \"" + line + "\"")
-				debugMsg("Length:", len(line))
-				debugMsg("Err:",err)
+				debugMsg("Length: %d", len(line))
+				debugMsg("Err: %s",err)
 			}
 		}
 	}
@@ -106,12 +106,10 @@ func interactiveLabelDataSet() {
 		inputString  string
 	)
 	// Load in the rules
-	fmt.Println("Which rule method would you like to use?")
-	fmt.Println("0 : quick rules")
-	fmt.Println("1 : extended rules (unfinished)")
-	fmt.Print("> ")
-	_, err = Scanf("%d", &inputInt)
-	errCheck(err)
+	inputInt = promptInt("", "%s\n%s\n%s",
+		"Which rule method would you like to use?",
+		"0 : quick rules",
+		"1 : extended rules (unfinished)")
 	switch inputInt {
 	case 0:
 		featToValMap = quickRules("label.rules")
@@ -123,13 +121,10 @@ func interactiveLabelDataSet() {
 	}
 	// Begin labeling the data set
 	fmt.Println("Label a data set")
-	fmt.Println("Please enter the location of the file which contains the",
-		"dataset")
-	fmt.Print("file name> ")
+	inputString = promptString("filename",
+		"Please enter the location of the file which contains the dataset")
 	// Receive file name of data set
-	_, err = Scanf("%s", &inputString)
-	errCheck(err)
-	debugMsg("Opening file:", inputString)
+	debugMsg("Opening file: %s", inputString)
 	// Open the file for input and create a buffered reader for the file
 	dataFile, err := os.Open(inputString)
 	errCheck(err)
@@ -137,13 +132,13 @@ func interactiveLabelDataSet() {
 	defer dataFile.Close()
 	dataReader := bufio.NewReader(dataFile)
 	// Open a file for the labeled training set
-	debugMsg("Opening file:", dataFile.Name()+".labeled")
+	debugMsg("Opening file: %s", dataFile.Name()+".labeled")
 	labeledFile, err := os.OpenFile(
 		dataFile.Name()+".labeled",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
 	errCheck(err)
-	debugMsg("Writing to file:", dataFile.Name()+".labeled")
+	debugMsg("Writing to file: %s", dataFile.Name()+".labeled")
 	debugMsg("Labeling... this may take a while")
 	// We do not need this file after, so close it upon leaving this method
 	defer labeledFile.Close()
@@ -159,7 +154,7 @@ func interactiveLabelDataSet() {
 		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
 			debugMsg("Skipping line due to abnormal formation")
-			debugMsg("LINE: ", line)
+			debugMsg("LINE: %s", line)
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.

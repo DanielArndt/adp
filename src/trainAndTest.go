@@ -46,14 +46,9 @@ func interactiveBuildTrainAndTestSet() {
 	)
 	// STEP 1:
 	// Begin building training and test set
-
 	fmt.Println("Building train and test set")
-	fmt.Println("What file would you like to split?")
-	fmt.Print("file name> ")
-	// Receive file name of data file
-	_, err = Scanf("%s", &inputString)
-	errCheck(err)
-	debugMsg("Opening file:", inputString)
+	inputString = promptString("filename", "What file would you like to split?")
+	debugMsg("Opening file: %s", inputString)
 	// Open the file for reading
 	dataFile, err := os.Open(inputString)
 	errCheck(err)
@@ -87,7 +82,7 @@ func interactiveBuildTrainAndTestSet() {
 		} else {
 			// Create the file and write the line
 			tempFileName := dataFile.Name() + "." + label + ".tmp"
-			debugMsg("Creating temporary file:", tempFileName)
+			debugMsg("Creating temporary file: %s", tempFileName)
 			tempFile, err := os.OpenFile(
 				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
@@ -117,16 +112,14 @@ func interactiveBuildTrainAndTestSet() {
 	// Hold the amount of each label we'd like in the training set in a map
 	trainCountMap := map[string]int{}
 	fmt.Println("Please enter the number of each type of label you'd", 
-		"like in the training set. Enter -1 for no bias")
-	// Ask user how much of each label they want and put it in a map trainCountMap
+		"like in the training set.")
+	// Ask user how much of each label they want and put it in a map 
+	// trainCountMap
 	for k, v := range countMap {
-		fmt.Println("label:", k, "max:", v)
-		fmt.Printf("> ")
-		Scanf("%d", &inputInt)
-		debugMsg("inputInt:", inputInt)
+		inputInt = promptInt(k, "label: %s max: %d", k, v) 
 		trainCountMap[k] = inputInt
 	}
-	debugMsg("Creating:", dataFile.Name()+".train")
+	debugMsg("Creating: %s", dataFile.Name()+".train")
 	// Open a file for writing training data
 	trainFile, err := os.OpenFile(
 		dataFile.Name()+".train",
@@ -139,7 +132,7 @@ func interactiveBuildTrainAndTestSet() {
 	// Read the correct amount of each label in
 
 	for k, v := range trainCountMap {
-		debugMsg("label:", k, "count:", v)
+		debugMsg("label: %s count: %d", k, v)
 		dataReader := bufio.NewReader(tempFileMap[k])
 		// Open a file for writing testing data
 		testFile, err := os.OpenFile(
