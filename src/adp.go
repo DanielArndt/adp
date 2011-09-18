@@ -46,27 +46,6 @@ const (
 		"http://web.cs.dal.ca/~darndt"
 )
 
-// Create some variables
-var (
-	Stdin       *bufio.Reader // Used by our Scanf function
-	verbose = flag.Bool("v", false, "Print extra, detailed output");
-)
-
-
-// Replaced the built-in fmt.Scanf with a wrapper on a buffered IO reader.
-// This is to stop additional input from being sent to the calling program
-// upon exit.
-// See: http://code.google.com/p/go/issues/detail?id=1359
-func Scanf(f string, v ...interface{}) (int, os.Error) {
-	var n int
-	var err os.Error
-	for n, err = fmt.Fscanf(Stdin, f, v...); n < 1; {
-		n, err = fmt.Fscanf(Stdin, f, v...)
-	}
-	return n, err
-}
-
-
 // Display a welcome message
 func displayWelcome() {
 	fmt.Println("\nWelcome to Arndt's Data Processor!")
@@ -83,16 +62,24 @@ func displayOptions() {
 	}
 }
 
-// Here we define all the possible tasks for the user in the initial
-// state.
-var opt = map[int]interactives{
-	0: {"Exit the program", exit},
-	1: {"Label Data Set", interactiveLabelDataSet},
-	2: {"Build training and test set", interactiveBuildTrainAndTestSet},
+// The option struct is used for holding the options available to the
+// user.
+type option struct {
+	// Holds a description of what this option will do
+	desc string
+	// Method describing the actions of the particular option.
+	do func()
 }
 
+// Here we define all the possible options for the user in the initial state
+var opt = map[int]option {
+0: {"Exit", exit},
+1: {"Label Data Set", interactiveLabelDataSet},
+2: {"Build training and test set", interactiveBuildTrainAndTestSet},
+3: {"Convert formats", interactiveConvert},
+}
 
-func init() {
+func init() {	
 	Stdin = bufio.NewReader(os.Stdin)
 }
 
@@ -107,7 +94,7 @@ func main() {
 	// Read in an int as the state to go to.
 	_, err = Scanf("%d", &inputInt)
 	errCheck(err)
-	debugMsg("Input as int:", inputInt)
+	debugMsg("Input as int: %d", inputInt)
 	if inputInt >= 0 && inputInt < len(opt) {
 		//Execute the method in the opt struct's "do" field
 		opt[inputInt].do()

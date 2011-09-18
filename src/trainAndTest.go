@@ -46,16 +46,11 @@ func interactiveBuildTrainAndTestSet() {
 	)
 	// STEP 1:
 	// Begin building training and test set
-
 	fmt.Println("Building train and test set")
-	fmt.Println("What file would you like to split?")
-	fmt.Print("file name> ")
-	// Receive file name of data file
-	_, err = Scanf("%s", &inputString)
-	errCheck(err)
-	debugMsg("Opening file:", inputString)
+	inputString = promptString("filename", "What file would you like to split?")
+	debugMsg("Opening file: %s", inputString)
 	// Open the file for reading
-	dataFile, err := os.Open(inputString, os.O_RDONLY, 0666)
+	dataFile, err := os.Open(inputString)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
@@ -76,7 +71,7 @@ func interactiveBuildTrainAndTestSet() {
 	line, err = dataReader.ReadString('\n') {
 		// Take each instance and write it to a label specific file
 		line = strings.Trim(line, "\n")
-		feature := strings.Split(line, ",", -1)
+		feature := strings.Split(line, ",")
 		label := feature[len(feature)-1]
 		tempFile, exists = tempFileMap[label]
 		countMap[label]++
@@ -87,8 +82,8 @@ func interactiveBuildTrainAndTestSet() {
 		} else {
 			// Create the file and write the line
 			tempFileName := dataFile.Name() + "." + label + ".tmp"
-			debugMsg("Creating temporary file:", tempFileName)
-			tempFile, err := os.Open(
+			debugMsg("Creating temporary file: %s", tempFileName)
+			tempFile, err := os.OpenFile(
 				tempFileName,
 				os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 				0666)
@@ -104,7 +99,7 @@ func interactiveBuildTrainAndTestSet() {
 	for k, v := range tempFileMap {
 		fileName := v.Name()
 		v.Close()
-		tempFileMap[k], err = os.Open(fileName, os.O_RDONLY, 0666)
+		tempFileMap[k], err = os.Open(fileName)
 		errCheck(err)
 		// We do not need this file after, so close it upon leaving this method
 		defer tempFileMap[k].Close()
@@ -117,18 +112,16 @@ func interactiveBuildTrainAndTestSet() {
 	// Hold the amount of each label we'd like in the training set in a map
 	trainCountMap := map[string]int{}
 	fmt.Println("Please enter the number of each type of label you'd", 
-		"like in the training set. Enter -1 for no bias")
-	// Ask user how much of each label they want and put it in a map trainCountMap
+		"like in the training set.")
+	// Ask user how much of each label they want and put it in a map 
+	// trainCountMap
 	for k, v := range countMap {
-		fmt.Println("label:", k, "max:", v)
-		fmt.Printf("> ")
-		Scanf("%d", &inputInt)
-		debugMsg("inputInt:", inputInt)
+		inputInt = promptInt(k, "label: %s max: %d", k, v) 
 		trainCountMap[k] = inputInt
 	}
-	debugMsg("Creating:", dataFile.Name()+".train")
+	debugMsg("Creating: %s", dataFile.Name()+".train")
 	// Open a file for writing training data
-	trainFile, err := os.Open(
+	trainFile, err := os.OpenFile(
 		dataFile.Name()+".train",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
@@ -139,10 +132,10 @@ func interactiveBuildTrainAndTestSet() {
 	// Read the correct amount of each label in
 
 	for k, v := range trainCountMap {
-		debugMsg("label:", k, "count:", v)
+		debugMsg("label: %s count: %d", k, v)
 		dataReader := bufio.NewReader(tempFileMap[k])
 		// Open a file for writing testing data
-		testFile, err := os.Open(
+		testFile, err := os.OpenFile(
 			dataFile.Name()+"."+k+".test",
 			os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 			0666)
@@ -152,26 +145,27 @@ func interactiveBuildTrainAndTestSet() {
 
 		if v > 0 {
 			// Generate a random permuation
-			rand := rand.Perm(countMap[k])
+			var randomized sort.IntSlice
+			randomized = rand.Perm(countMap[k])
 			// use a slice the first /v/ of them
-			rand = rand[0:v]
+			randomized = randomized[0:v]
 			// sort the ints so that as we iterate through each instance we can
 			// easily find the next one we need to export
-			sort.SortInts(rand)
+			randomized.Sort()
 			// Read through the file, writing the included instances to
 			// .train and the others to .test
 			lineCount := 0
-			if len(rand) > 0 {
+			if len(randomized) > 0 {
 				for line, err = dataReader.ReadString('\n'); // read line by line
 				err == nil;                                  // stop on error
 				line, err = dataReader.ReadString('\n') {
-					if lineCount == rand[0] {
+					if lineCount == randomized[0] {
 						_, err = trainFile.WriteString(line)
 						errCheck(err)
-						if len(rand) > 1 {
-							rand = rand[1:len(rand)]
+						if len(randomized) > 1 {
+							randomized = randomized[1:len(randomized)]
 						} else {
-							rand[0] = -1 // skip the rest
+							randomized[0] = -1 // skip the rest
 						}
 					} else {
 						_, err = testFile.WriteString(line)

@@ -50,7 +50,7 @@ func quickRules(filepath string) map[int]map[int]string {
 	// list to return which contains the parsed rules
 	debugMsg("Opening file \"" + filepath + "\"")
 	// Open the rule file
-	dataFile, err := os.Open(filepath, os.O_RDONLY, 0666)
+	dataFile, err := os.Open(filepath)
 	errCheck(err)
 	defer dataFile.Close()
 	// Create a buffered reader for the rule file
@@ -67,18 +67,18 @@ func quickRules(filepath string) map[int]map[int]string {
 		line = strings.TrimRight(line, "\n")
 		if strings.HasPrefix(line, "#") {
 			// Ignore comments
-			debugMsg("Skipping line due to comment:", line)
+			debugMsg("Skipping line due to comment: %s", line)
 		} else {
 			// Split by fields
 			fields := strings.Fields(line)
 			if len(fields) == 3 {
 				// Deal with comma seperated feature indexes
-				features := strings.Split(fields[0], ",", -1)
+				features := strings.Split(fields[0], ",")
 				// Make a struct for each feature index
 				for i := 0; i < len(features); i++ {
 					debugMsg("Making label rule:")
-					debugMsg("if feature [", features[i], "] == [", fields[1], "] {")
-					debugMsg("\tlabel =", fields[2])
+					debugMsg("if feature [%s]==[%s] {", features[i], fields[1])
+					debugMsg("\tlabel = %s", fields[2])
 					debugMsg("}")
 					// Read in some values
 					featureIndex, err := strconv.Atoi(features[i])
@@ -96,29 +96,72 @@ func quickRules(filepath string) map[int]map[int]string {
 				}
 			} else {
 				debugMsg("Malformed line: \"" + line + "\"")
-				debugMsg("Length:", len(line))
-				debugMsg("Err:",err)
+				debugMsg("Length: %d", len(line))
+				debugMsg("Err: %s",err)
 			}
 		}
 	}
 	return featToValMap
 }
 
+<<<<<<< HEAD
 func labelFile(fileName string){
 	debugMsg("Opening file:", fileName)
 	// Open the file for input and create a buffered reader for the file
 	dataFile, err := os.Open(fileName, os.O_RDONLY, 0666)
+=======
+//state 1 - Label a data set
+func interactiveLabelDataSet() {
+	var (
+		featToValMap map[int]map[int]string
+		err          os.Error
+		inputInt     int
+		inputString  string
+	)
+	// Load in the rules
+	inputInt = promptInt("", "%s\n%s\n%s",
+		"Which rule method would you like to use?",
+		"0 : quick rules",
+		"1 : extended rules (unfinished)")
+	switch inputInt {
+	case 0:
+		featToValMap = quickRules("label.rules")
+	}
+
+	// Read out the maps stored for each feature
+	for k, v := range featToValMap {
+		debugMsg("column:", k, v)
+	}
+	// Begin labeling the data set
+	fmt.Println("Label a data set")
+	inputString = promptString("filename",
+		"Please enter the location of the file which contains the dataset")
+	// Receive file name of data set
+	debugMsg("Opening file: %s", inputString)
+	// Open the file for input and create a buffered reader for the file
+	dataFile, err := os.Open(inputString)
+>>>>>>> multiTestSet
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
 	dataReader := bufio.NewReader(dataFile)
+<<<<<<< HEAD
 	debugMsg("Opening file:", dataFile.Name()+".labeled")
 	labeledFile, err := os.Open(
+=======
+	// Open a file for the labeled training set
+	debugMsg("Opening file: %s", dataFile.Name()+".labeled")
+	labeledFile, err := os.OpenFile(
+>>>>>>> multiTestSet
 		dataFile.Name()+".labeled",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
 	errCheck(err)
+<<<<<<< HEAD
 	debugMsg("Writing to file:", labeledFile.Name())
+=======
+	debugMsg("Writing to file: %s", dataFile.Name()+".labeled")
+>>>>>>> multiTestSet
 	debugMsg("Labeling... this may take a while")
 	// We do not need this file after, so close it upon leaving this method
 	defer labeledFile.Close()
@@ -130,10 +173,11 @@ func labelFile(fileName string){
 	line, err = dataReader.ReadString('\n') {
 		line = strings.TrimRight(line, "\n")
 		// Split the line into it's feature values
-		feature := strings.Split(line, ",", -1)
+		feature := strings.Split(line, ",")
 		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
 			debugMsg("Skipping line due to abnormal formation")
+			debugMsg("LINE: %s", line)
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.
