@@ -39,6 +39,11 @@ var (
 	Stdin *bufio.Reader // Used by our Scanf function
 )
 
+const (
+	ppfx = ">>>" // The prompt prefix. This is used at the start of any line
+                 // prompting for the user to enter something
+)
+
 /*
  * Replaced the built-in fmt.Scanf with a wrapper on a buffered IO reader.
  * This is to stop additional input from being sent to the calling program
@@ -67,8 +72,10 @@ func promptString(prompt string, format string, a ...interface{}) string {
 		err      os.Error
 		toReturn string
 	)
-	fmt.Printf(format, a...)
-	fmt.Printf("\n%s> ", prompt)
+	if format != "" {
+		fmt.Printf(format, a...)
+	}
+	fmt.Printf("\n%s%s> ", ppfx, prompt)
 	_, err = Scanf("%s", &toReturn)
 	errCheck(err)
 	return toReturn
@@ -87,7 +94,7 @@ func promptInt(prompt string, format string, a ...interface{}) int {
 		toReturn int
 	)
 	fmt.Printf(format, a...)
-	fmt.Printf("\n%s> ", prompt)
+	fmt.Printf("\n%s%s> ", ppfx, prompt)
 	_, err = Scanf("%d", &toReturn)
 	errCheck(err)
 	return toReturn

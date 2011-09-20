@@ -54,8 +54,7 @@ var relRE *regexp.Regexp = regexp.MustCompile("^@relation\\s+(\\S+)")
 // For now just skips the header
 func readHeader(infile *bufio.Reader) header {
 	var hdr header
-	for line, err := infile.ReadString('\n'); // read line by line
-	err == nil && !strings.HasPrefix(strings.ToLower(line), "@data"); line, err = infile.ReadString('\n') {
+	for line, err := infile.ReadString('\n'); err == nil && !strings.HasPrefix(strings.ToLower(line), "@data"); line, err = infile.ReadString('\n') {
 		line = strings.ToLower(line)
 		match := attrRE.FindStringSubmatch(line)
 		if match != nil {
@@ -68,7 +67,13 @@ func readHeader(infile *bufio.Reader) header {
 		}
 		match = relRE.FindStringSubmatch(line)
 		if match != nil {
-			hdr.name = match[1]
+			if hdr.name == "" {
+				hdr.name = match[1]
+			} else {
+				log.Fatalf("Double declaration of relation name?\n" +
+					"First: %s\n"+
+					"Second: %s\n", hdr.name, match[1])
+			}
 		}
 		//TODO: Need to do some parsing of header to create c50 files.
 	}
@@ -83,7 +88,7 @@ func writelineSbbFive(line string,
 
 	data := features[0 : len(features)-2]
 	label := features[len(features)-1]
-	fmt.Printf("%s - %s\n", attr, class)
+	fmt.Printf("%s - %s\n", data, label)
 }
 
 func interactiveConvert() {
@@ -100,7 +105,7 @@ func interactiveConvert() {
 	infile := bufio.NewReader(infileFD)
 	hdr := readHeader(infile)
 	log.Println(hdr)
-	sbbFiveData, err := os.Create(arffFileName + ".sbb5.data")
+/*	sbbFiveData, err := os.Create(arffFileName + ".sbb5.data")
 	errCheck(err)
 	sbbFiveLabels, err := os.Create(arffFileName + ".sbb5.labels")
 	errCheck(err)
@@ -110,5 +115,5 @@ func interactiveConvert() {
 			continue
 		}
 		writelineSbbFive(line, sbbFiveData, sbbFiveLabels)
-	}
+	}*/
 }

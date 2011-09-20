@@ -85,16 +85,11 @@ func init() {
 
 func main() {
 	flag.Parse()
-	var err os.Error
-	var inputInt int
 
 	// MAIN ------------------------- 
 	displayWelcome()
-	fmt.Printf("> ")
+	inputInt := promptInt("opt", "")
 	// Read in an int as the state to go to.
-	_, err = Scanf("%d", &inputInt)
-	errCheck(err)
-	debugMsg("Input as int: %d", inputInt)
 	if inputInt >= 0 && inputInt < len(opt) {
 		//Execute the method in the opt struct's "do" field
 		opt[inputInt].do()
