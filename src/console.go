@@ -36,7 +36,7 @@ import (
 
 // Create some variables
 var (
-	Stdin       *bufio.Reader // Used by our Scanf function
+	Stdin *bufio.Reader // Used by our Scanf function
 )
 
 /*
@@ -62,9 +62,9 @@ func Scanf(format string, v ...interface{}) (int, os.Error) {
  *   format - The format of the displayed message in same style as fmt.Printf
  *   a ...  - Any additional inputs needed as defined by format.
  */
-func promptString(prompt string, format string, a ...interface{}) string{
+func promptString(prompt string, format string, a ...interface{}) string {
 	var (
-		err os.Error
+		err      os.Error
 		toReturn string
 	)
 	fmt.Printf(format, a...)
@@ -81,9 +81,9 @@ func promptString(prompt string, format string, a ...interface{}) string{
  *   format - The format of the displayed message in same style as fmt.Printf
  *   a ...  - Any additional inputs needed as defined by format.
  */
-func promptInt(prompt string, format string, a ...interface{}) int{
+func promptInt(prompt string, format string, a ...interface{}) int {
 	var (
-		err os.Error
+		err      os.Error
 		toReturn int
 	)
 	fmt.Printf(format, a...)
@@ -92,7 +92,6 @@ func promptInt(prompt string, format string, a ...interface{}) int{
 	errCheck(err)
 	return toReturn
 }
-
 
 func debugMsg(format string, a ...interface{}) {
 	fmt.Fprintf(os.Stderr, "DEBUG: ")

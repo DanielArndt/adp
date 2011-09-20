@@ -28,11 +28,11 @@
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "strconv"
-    "strings"
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
 var (
@@ -41,7 +41,6 @@ var (
 	inputInt          int
 	inputString       string
 )
-
 
 // This uses the quick method where maps are used. This is only for sets
 // of rules which have no conflicts and have a simple format "if coloumn
@@ -61,7 +60,7 @@ func quickRules(filepath string) map[int]map[int]string {
 	featToValMap := map[int]map[int]string{}
 	// Read in the contents
 	for line, err := dataReader.ReadString('\n'); // read line by line
-	err == nil;                  // loop until end of file or error
+	err == nil;                                   // loop until end of file or error
 	line, err = dataReader.ReadString('\n') {
 		// Trim newline from end
 		line = strings.TrimRight(line, "\n")
@@ -97,19 +96,13 @@ func quickRules(filepath string) map[int]map[int]string {
 			} else {
 				debugMsg("Malformed line: \"" + line + "\"")
 				debugMsg("Length: %d", len(line))
-				debugMsg("Err: %s",err)
+				debugMsg("Err: %s", err)
 			}
 		}
 	}
 	return featToValMap
 }
 
-<<<<<<< HEAD
-func labelFile(fileName string){
-	debugMsg("Opening file:", fileName)
-	// Open the file for input and create a buffered reader for the file
-	dataFile, err := os.Open(fileName, os.O_RDONLY, 0666)
-=======
 //state 1 - Label a data set
 func interactiveLabelDataSet() {
 	var (
@@ -136,32 +129,21 @@ func interactiveLabelDataSet() {
 	fmt.Println("Label a data set")
 	inputString = promptString("filename",
 		"Please enter the location of the file which contains the dataset")
-	// Receive file name of data set
 	debugMsg("Opening file: %s", inputString)
 	// Open the file for input and create a buffered reader for the file
 	dataFile, err := os.Open(inputString)
->>>>>>> multiTestSet
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
 	dataReader := bufio.NewReader(dataFile)
-<<<<<<< HEAD
-	debugMsg("Opening file:", dataFile.Name()+".labeled")
-	labeledFile, err := os.Open(
-=======
 	// Open a file for the labeled training set
 	debugMsg("Opening file: %s", dataFile.Name()+".labeled")
 	labeledFile, err := os.OpenFile(
->>>>>>> multiTestSet
 		dataFile.Name()+".labeled",
 		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
 		0666)
 	errCheck(err)
-<<<<<<< HEAD
-	debugMsg("Writing to file:", labeledFile.Name())
-=======
 	debugMsg("Writing to file: %s", dataFile.Name()+".labeled")
->>>>>>> multiTestSet
 	debugMsg("Labeling... this may take a while")
 	// We do not need this file after, so close it upon leaving this method
 	defer labeledFile.Close()
@@ -200,35 +182,3 @@ func interactiveLabelDataSet() {
 		label = ""
 	}
 }
-
-//state 1 - Label a data set
-func interactiveLabelDataSet() {
-	// Load in the rules
-	fmt.Println("Which rule method would you like to use?")
-	fmt.Println("0 : quick rules")
-//	fmt.Println("1 : extended rules (unfinished)")
-	fmt.Print("> ")
-	_, err = Scanf("%d", &inputInt)
-	errCheck(err)
-	switch inputInt {
-	case 0:
-		featureToValueMap = quickRules("label.rules")
-	}
-
-	// Read out the maps stored for each feature
-	if *verbose {
-		for k, v := range featureToValueMap {
-			debugMsg("column:", k, v)
-		}
-	}
-	// Begin labeling the data set
-	fmt.Println("Label a data set")
-	fmt.Println("Please enter the location of the file which contains the",
-		"dataset")
-	fmt.Print("file name> ")
-	// Receive file name of data set
-	_, err = Scanf("%s", &inputString)
-	errCheck(err)
-	labelFile(inputString)
-}
-

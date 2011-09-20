@@ -72,22 +72,22 @@ type option struct {
 }
 
 // Here we define all the possible options for the user in the initial state
-var opt = map[int]option {
-0: {"Exit", exit},
-1: {"Label Data Set", interactiveLabelDataSet},
-2: {"Build training and test set", interactiveBuildTrainAndTestSet},
-3: {"Convert formats", interactiveConvert},
+var opt = map[int]option{
+	0: {"Exit", exit},
+	1: {"Label Data Set", interactiveLabelDataSet},
+	2: {"Build training and test set", interactiveBuildTrainAndTestSet},
+	3: {"Convert formats", interactiveConvert},
 }
 
-func init() {	
+func init() {
 	Stdin = bufio.NewReader(os.Stdin)
 }
 
 func main() {
 	flag.Parse()
 	var err os.Error
-	var	inputInt int
-	
+	var inputInt int
+
 	// MAIN ------------------------- 
 	displayWelcome()
 	fmt.Printf("> ")

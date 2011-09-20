@@ -25,24 +25,23 @@
  *  
  */
 
-
 package main
 
 import (
-    "bufio"
-    "fmt"
-    "os"
-    "rand"
-    "sort"
-    "strings"
+	"bufio"
+	"fmt"
+	"os"
+	"rand"
+	"sort"
+	"strings"
 )
 
 // state 2 - Build and train test set
 func interactiveBuildTrainAndTestSet() {
 	var (
-		err os.Error
+		err         os.Error
 		inputString string
-		inputInt int
+		inputInt    int
 	)
 	// STEP 1:
 	// Begin building training and test set
@@ -111,12 +110,12 @@ func interactiveBuildTrainAndTestSet() {
 
 	// Hold the amount of each label we'd like in the training set in a map
 	trainCountMap := map[string]int{}
-	fmt.Println("Please enter the number of each type of label you'd", 
+	fmt.Println("Please enter the number of each type of label you'd",
 		"like in the training set.")
 	// Ask user how much of each label they want and put it in a map 
 	// trainCountMap
 	for k, v := range countMap {
-		inputInt = promptInt(k, "label: %s max: %d", k, v) 
+		inputInt = promptInt(k, "label: %s max: %d", k, v)
 		trainCountMap[k] = inputInt
 	}
 	debugMsg("Creating: %s", dataFile.Name()+".train")
