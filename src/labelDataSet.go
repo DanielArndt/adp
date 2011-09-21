@@ -103,47 +103,18 @@ func quickRules(filepath string) map[int]map[int]string {
 	return featToValMap
 }
 
-//state 1 - Label a data set
-func interactiveLabelDataSet() {
-	var (
-		featToValMap map[int]map[int]string
-		err          os.Error
-		inputInt     int
-		inputString  string
-	)
-	// Load in the rules
-	inputInt = promptInt("", "%s\n%s\n%s",
-		"Which rule method would you like to use?",
-		"0 : quick rules",
-		"1 : extended rules (unfinished)")
-	switch inputInt {
-	case 0:
-		featToValMap = quickRules("label.rules")
-	}
-
-	// Read out the maps stored for each feature
-	for k, v := range featToValMap {
-		debugMsg("column:", k, v)
-	}
-	// Begin labeling the data set
-	fmt.Println("Label a data set")
-	inputString = promptString("filename",
-		"Please enter the location of the file which contains the dataset")
-	debugMsg("Opening file: %s", inputString)
+func labelFile(fileName string){
+	debugMsg("Opening file: %s", fileName)
 	// Open the file for input and create a buffered reader for the file
-	dataFile, err := os.Open(inputString)
+	dataFile, err := os.Open(fileName)
 	errCheck(err)
 	// We do not need this file after, so close it upon leaving this method
 	defer dataFile.Close()
 	dataReader := bufio.NewReader(dataFile)
-	// Open a file for the labeled training set
 	debugMsg("Opening file: %s", dataFile.Name()+".labeled")
-	labeledFile, err := os.OpenFile(
-		dataFile.Name()+".labeled",
-		os.O_CREATE+os.O_WRONLY+os.O_TRUNC,
-		0666)
+	labeledFile, err := os.Create(dataFile.Name()+".labeled")
 	errCheck(err)
-	debugMsg("Writing to file: %s", dataFile.Name()+".labeled")
+	debugMsg("Writing to file: %s", labeledFile.Name())
 	debugMsg("Labeling... this may take a while")
 	// We do not need this file after, so close it upon leaving this method
 	defer labeledFile.Close()
@@ -159,7 +130,6 @@ func interactiveLabelDataSet() {
 		// FIXME: fix the way we deal with malformed lines
 		if len(feature) < 5 {
 			debugMsg("Skipping line due to abnormal formation")
-			debugMsg("LINE: %s", line)
 			break
 		}
 		//Find the rule that satisfies the current individual, if any.
@@ -181,4 +151,29 @@ func interactiveLabelDataSet() {
 		errCheck(err)
 		label = ""
 	}
+}
+
+//state 1 - Label a data set
+func interactiveLabelDataSet() {
+	// Load in the rules
+	fmt.Println("Which rule method would you like to use?")
+	fmt.Println("0 : quick rules")
+	//fmt.Println("1 : extended rules (unfinished)")
+	fmt.Print("> ")
+	_, err = Scanf("%d", &inputInt)
+	errCheck(err)
+	switch inputInt {
+	case 0:
+		featureToValueMap = quickRules("label.rules")
+	}
+
+	// Begin labeling the data set
+	fmt.Println("Label a data set")
+	fmt.Println("Please enter the location of the file which contains the",
+		"dataset")
+	fmt.Print("file name> ")
+	// Receive file name of data set
+	_, err = Scanf("%s", &inputString)
+	errCheck(err)
+	labelFile(inputString)
 }

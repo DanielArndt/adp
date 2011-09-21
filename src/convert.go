@@ -81,14 +81,20 @@ func readHeader(infile *bufio.Reader) header {
 	return hdr
 }
 
+// writelineSbbFive writes the given line in SBB5 format, storing the data in 
+// datafile and the class label in labelfile. Currently, writelineSbbFive
+// assumes that the last column is the class label.
 func writelineSbbFive(line string,
 	datafile *os.File,
 	labelfile *os.File) {
 	features := strings.Split(line, ",")
 
-	data := features[0 : len(features)-2]
+	data := strings.Join(features[0 : len(features)-2], " ")
 	label := features[len(features)-1]
-	fmt.Printf("%s - %s\n", data, label)
+	_, err = datafile.WriteString(data + "\n")
+	_, err = labelfile.WriteString(label + "\n")
+	errCheck(err)
+
 }
 
 func interactiveConvert() {
@@ -105,7 +111,7 @@ func interactiveConvert() {
 	infile := bufio.NewReader(infileFD)
 	hdr := readHeader(infile)
 	log.Println(hdr)
-/*	sbbFiveData, err := os.Create(arffFileName + ".sbb5.data")
+	sbbFiveData, err := os.Create(arffFileName + ".sbb5.data")
 	errCheck(err)
 	sbbFiveLabels, err := os.Create(arffFileName + ".sbb5.labels")
 	errCheck(err)
@@ -115,5 +121,5 @@ func interactiveConvert() {
 			continue
 		}
 		writelineSbbFive(line, sbbFiveData, sbbFiveLabels)
-	}*/
+	}
 }
